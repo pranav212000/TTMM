@@ -156,7 +156,7 @@ class _AddGroupState extends State<AddGroup> {
                   .addGroup(uid, groupName, _users, null)
                   .then((value) {
                 print('group Added');
-                Navigator.of(context).popUntil((route) => route.isFirst);
+                Navigator.of(context).pop('OK');
               });
             }
           }

@@ -61,7 +61,7 @@ class _ContactsPageState extends State<ContactsPage>
             await DatabaseService().checkUserPresent(phoneNumber);
         if (isUserPresent) {
           print('Adding to registered ${contact.phones.first.value}');
-          if(contact.phones.first.value.replaceAll(' ', '') != _phoneNumber)
+          if (contact.phones.first.value.replaceAll(' ', '') != _phoneNumber)
             _registeredContacts.add(contact);
         } else {
           print('Adding to invite ${contact.phones.first.value}');
@@ -214,13 +214,17 @@ class _ContactsPageState extends State<ContactsPage>
     return _tabController.index == 0
         ? FloatingActionButton(
             shape: StadiumBorder(),
-            onPressed: () {
-              if (_selectedNumbers.length > 0)
-                Navigator.push(
+            onPressed: () async {
+              if (_selectedNumbers.length > 0) {
+                String result = await Navigator.push(
                     context,
                     MaterialPageRoute(
                         builder: (context) => new AddGroup(_selectedNumbers)));
-              else
+
+                if (result == 'OK') {
+                  Navigator.of(context).pop('OK');
+                }
+              } else
                 _scaffoldKey.currentState.showSnackBar(SnackBar(
                   content: Text(
                     'Please select a contact',

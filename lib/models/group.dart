@@ -5,7 +5,7 @@ class Group {
   String groupId;
   String groupName;
   String groupIconUrl;
-  List<UserData> groupMembers;
+  List<dynamic> groupMembers;
 
   Group(
       {@required this.groupId,

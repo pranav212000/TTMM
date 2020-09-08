@@ -2,6 +2,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:ttmm/screens/addgroup.dart';
+import 'package:ttmm/screens/contacts/contacts_page.dart';
+import 'package:ttmm/screens/home/home.dart';
 
 import 'package:ttmm/services/auth.dart';
 import 'package:ttmm/shared/error.dart';
@@ -28,17 +31,29 @@ class App extends StatelessWidget {
 
         // Once complete, show your application
         if (snapshot.connectionState == ConnectionState.done) {
-          return MaterialApp(
-            theme: ThemeData(
-              primarySwatch: Colors.blue,
-              iconTheme: IconThemeData(
-                color: Colors.blue,
+          return StreamProvider<User>.value(
+            value: AuthService().user,
+            child: MaterialApp(
+              theme: ThemeData(
+                primarySwatch: Colors.blue,
+                iconTheme: IconThemeData(
+                  color: Colors.blue,
+                ),
               ),
-            ),
+              initialRoute: '/',
+              routes: {
+                // When navigating to the "/" route, build the FirstScreen widget.
+                '/': (context) => Wrapper(),
+                // When navigating to the "/second" route, build the SecondScreen widget.
+                '/home': (context) => Home(),
+                '/contacts' : (context) => ContactsPage(),
+                
 
-            home: StreamProvider<User>.value(
-                value: AuthService().user, child: Wrapper()),
-            // home: SignIn(),
+              },
+
+              // home: Wrapper(),
+              // home: SignIn(),
+            ),
           );
         }
 

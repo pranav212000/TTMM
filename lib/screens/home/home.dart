@@ -85,7 +85,10 @@ class _HomeState extends State<Home> {
         .getUserGroups(userData.groups)
         .then((userGroups) {
       setState(() {
-        _userGroups = userGroups;
+        if (userGroups != null)
+          _userGroups = userGroups;
+        else
+          _userGroups = new List<Group>();
       });
     }).whenComplete(() {
       setState(() {
@@ -110,8 +113,12 @@ class _HomeState extends State<Home> {
           if (snapshot.hasData) {
             UserData userData = snapshot.data;
 
-            if (_userGroups == null) getUserGroups(firebaseuser, userData);
-            print(userData.groups.length);
+            if (_userGroups == null)
+              getUserGroups(firebaseuser, userData);
+            else
+              print('Groups length : ${_userGroups.length}');
+
+            // print(userData.groups.length);
             return Scaffold(
               key: _scaffoldKey,
               appBar: AppBar(
@@ -186,8 +193,18 @@ class _HomeState extends State<Home> {
                   final PermissionStatus permissionStatus =
                       await _getPermission();
                   if (permissionStatus == PermissionStatus.granted) {
-                    Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => ContactsPage()));
+                    String result = await Navigator.of(context).push(
+                        MaterialPageRoute(
+                            builder: (context) => ContactsPage()));
+
+                    if (result == 'OK') {
+                      print('RESULT OK');
+                      _userGroups = null;
+                      Navigator.of(context).pushReplacement(
+                          MaterialPageRoute(builder: (context) => Home()));
+                    } else {
+                      print("Group not created");
+                    }
                   } else {
                     showDialog(
                         context: context,
@@ -207,9 +224,9 @@ class _HomeState extends State<Home> {
                 label: Text('Add Group'),
                 icon: Icon(Icons.add),
               ),
-              body: _loadingGroups
+              body: _loadingGroups || _userGroups == null
                   ? Loading()
-                  : ((_userGroups.length == 0)
+                  : ((_userGroups.length == 0 && !_loadingGroups)
                       ? Center(child: Text('No groups yet'))
                       : ListView.builder(
                           itemCount: _userGroups.length ?? 0,
