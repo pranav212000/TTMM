@@ -13,6 +13,7 @@ import 'package:ttmm/services/auth.dart';
 import 'package:ttmm/services/database.dart';
 import 'package:ttmm/shared/constants.dart';
 import 'package:ttmm/shared/loading.dart';
+import 'package:ttmm/wrapper.dart';
 
 class Home extends StatefulWidget {
   @override
@@ -46,16 +47,16 @@ class _HomeState extends State<Home> {
         } else {
           preferences.setString(currentUser, user.uid);
           preferences.setString(currentPhoneNUmber, user.phoneNumber);
-          setState(() {
-            _userData = UserData(
-                uid: snapshot.data()['uid'],
-                name: snapshot.data()['name'],
-                groups: snapshot.data()['groups'],
-                phoneNumber: snapshot.data()['phoneNumber'],
-                profileUrl: snapshot.data()['profileUrl']);
-
-            print(_userData.toString());
-          });
+          // setState(() {
+          //   _userData = UserData(
+          //       uid: snapshot.data()['uid'],
+          //       name: snapshot.data()['name'],
+          //       groups: snapshot.data()['groups'],
+          //       phoneNumber: snapshot.data()['phoneNumber'],
+          //       profileUrl: snapshot.data()['profileUrl']);
+          //
+          //   print(_userData.toString());
+          // });
 
           print('Document exists');
         }
@@ -81,43 +82,72 @@ class _HomeState extends State<Home> {
 
   Future getUserGroups(
       firebaseAuth.User firebaseuser, UserData userData) async {
-    await DatabaseService(phoneNumber: firebaseuser.phoneNumber)
-        .getUserGroups(userData.groups)
-        .then((userGroups) {
+    List<Group> userGroups =
+        await DatabaseService(phoneNumber: firebaseuser.phoneNumber)
+            .getUserGroups(userData.groups);
+
+    print('user groups length after await : ${userGroups.length}');
+    if (this.mounted)
       setState(() {
-        if (userGroups != null)
-          _userGroups = userGroups;
-        else
+        print('IN SET STATE');
+        if (userGroups != null) {
+          userGroups.sort((a, b) => a.updateTime.compareTo(b.updateTime));
+          print('user groups length : ${userGroups.length}');
+          _userGroups = userGroups.reversed.toList();
+        } else
           _userGroups = new List<Group>();
-      });
-    }).whenComplete(() {
-      setState(() {
+
         _loadingGroups = false;
+        print('Loading complete in then');
       });
-    }).catchError((e) {
-      _scaffoldKey.currentState
-          .showSnackBar(SnackBar(content: Text('Could not load groups')));
-      print('Could not load groups');
-    });
+    // }).catchError((e) {
+    //   setState(() {
+    //     print('IN SET STATE');
+    //
+    //     _loadingGroups = false;
+    //     print(e.toString());
+    //     print('loading done in on error');
+    //   });
+    //
+    //   _scaffoldKey.currentState
+    //       .showSnackBar(SnackBar(content: Text('Could not load groups')));
+    //   print('Could not load groups');
+    // });
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    _userGroups = null;
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final firebaseuser = Provider.of<firebaseAuth.User>(context);
 
-    if (_userData == null) getUserData(firebaseuser);
-
+    // if (_userData == null) getUserData(firebaseuser);
+    print(
+        '-------------------------------------------------------------------------------------------------------');
     return StreamBuilder<UserData>(
         stream: DatabaseService(phoneNumber: firebaseuser.phoneNumber).userData,
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             UserData userData = snapshot.data;
-
-            if (_userGroups == null)
+            print(userData.toJson());
+            if (_userGroups == null) {
+              print('get groups');
               getUserGroups(firebaseuser, userData);
-            else
+            } else if ((_userGroups.length != userData.groups.length) &&
+                !_loadingGroups) {
+              print(_loadingGroups);
+              print('getting groups');
+              _loadingGroups = true;
+              getUserGroups(firebaseuser, userData);
+            } else {
               print('Groups length : ${_userGroups.length}');
-
+              print('Loading in stream builder $_loadingGroups');
+            }
             // print(userData.groups.length);
             return Scaffold(
               key: _scaffoldKey,
@@ -172,11 +202,6 @@ class _HomeState extends State<Home> {
                         color: Colors.blue,
                       ),
                     ),
-
-                    // Divider(
-
-                    //   thickness: 2,
-                    // ),
                     ListTile(
                       leading: Icon(
                         Icons.exit_to_app,
@@ -201,7 +226,7 @@ class _HomeState extends State<Home> {
                       print('RESULT OK');
                       _userGroups = null;
                       Navigator.of(context).pushReplacement(
-                          MaterialPageRoute(builder: (context) => Home()));
+                          MaterialPageRoute(builder: (context) => Wrapper()));
                     } else {
                       print("Group not created");
                     }
@@ -224,7 +249,9 @@ class _HomeState extends State<Home> {
                 label: Text('Add Group'),
                 icon: Icon(Icons.add),
               ),
-              body: _loadingGroups || _userGroups == null
+              body: (_loadingGroups ||
+                      (_userGroups != null ? _userGroups.length : 0) !=
+                          userData.groups.length)
                   ? Loading()
                   : ((_userGroups.length == 0 && !_loadingGroups)
                       ? Center(child: Text('No groups yet'))
@@ -238,19 +265,6 @@ class _HomeState extends State<Home> {
                             );
                           },
                         )),
-
-              // body: userData.groups.length == 0
-              //     ? ListView.builder(
-              //         itemCount: userData?.groups?.length ?? 0,
-              //         itemBuilder: (BuildContext context, int index) {
-              //           return ListTile(
-              //             title: Text(userData.groups.elementAt(index)),
-              //           );
-              //         },
-              //       )
-              //     : Center(
-              //         child: Text('No Groups Yet'),
-              //       ),
             );
           } else {
             return Loading();

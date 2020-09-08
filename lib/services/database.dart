@@ -1,14 +1,11 @@
-import 'dart:convert';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:contacts_service/contacts_service.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:ttmm/models/group.dart';
 import 'package:ttmm/models/user.dart';
 import 'package:ttmm/shared/constants.dart' as constants;
 
 class DatabaseService {
   final String phoneNumber;
+
   DatabaseService({this.phoneNumber});
 
   final CollectionReference groupsCollection =
@@ -83,6 +80,8 @@ class DatabaseService {
       constants.groupName: name,
       constants.groupIconUrl: url,
       constants.groupMembers: userIds,
+      constants.updateTime: Timestamp.fromDate(DateTime.now()),
+      constants.createdTime: Timestamp.fromDate(DateTime.now()),
     }).then((value) => {
           phoneNumbers.forEach((phoneNumber) {
             usersCollection.doc(phoneNumber).update({
@@ -115,9 +114,23 @@ class DatabaseService {
   Future<List<Group>> getUserGroups(List<dynamic> groupIds) async {
     List<Group> groups = new List<Group>();
 
-    Future.wait(groupIds.map((groupId) async {
-      groups.add(_groupFromSnapshot(await groupsCollection.doc(groupId).get()));
+    print(groupIds);
+    await Future.wait(groupIds.map((groupId) async {
+
+      DocumentSnapshot snapshot =  await groupsCollection.doc(groupId).get();
+      if(snapshot.exists) {
+        print('Document exists');
+
+        Group group = _groupFromSnapshot(snapshot);
+        groups.add(group);
+      } else {
+        print('Snapshot does not exist');
+      }
     }));
+
+
+    print('**************');
+    print(groups.length);
     return groups;
   }
 
@@ -126,7 +139,9 @@ class DatabaseService {
         groupId: doc.data()[constants.groupId],
         groupName: doc.data()[constants.groupName],
         groupIconUrl: doc.data()[constants.groupIconUrl],
-        groupMembers: doc.data()[constants.groupMembers]);
+        groupMembers: doc.data()[constants.groupMembers],
+        updateTime: doc.data()[constants.updateTime],
+        createdTime: doc.data()[constants.createdTime]);
   }
 
   Stream<UserData> get userData {

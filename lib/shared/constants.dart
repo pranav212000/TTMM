@@ -23,3 +23,5 @@ const groupId = 'groupId';
 const groupName = 'groupName';
 const groupIconUrl = 'groupIconUrl';
 const groupMembers = 'members';
+const updateTime = 'updateTime';
+const createdTime = 'createdTime';
