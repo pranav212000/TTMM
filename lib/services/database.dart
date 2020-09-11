@@ -42,11 +42,10 @@ class DatabaseService {
   //   return
   // }
 
-// TODO
-
   Future getUserData(String phoneNumber) async {
     DocumentSnapshot snapshot = await usersCollection.doc(phoneNumber).get();
     if (snapshot.exists) {
+      print('SNAPSHOT EXIST');
       Map<String, dynamic> _data = snapshot.data();
       return UserData(
           uid: _data['uid'],
@@ -54,8 +53,10 @@ class DatabaseService {
           groups: _data['groups'],
           phoneNumber: _data['phoneNumber'],
           profileUrl: _data['profileUrl']);
-    } else
+    } else {
+      print('SNAPSHOT DOESN"T EXIST');
       return null;
+    }
   }
 
   Future<bool> checkUserPresent(String phoneNumber) async {
@@ -79,7 +80,7 @@ class DatabaseService {
     await groupsCollection.doc(id).set({
       constants.groupName: name,
       constants.groupIconUrl: url,
-      constants.groupMembers: userIds,
+      constants.groupMembers: phoneNumbers,
       constants.updateTime: Timestamp.fromDate(DateTime.now()),
       constants.createdTime: Timestamp.fromDate(DateTime.now()),
     }).then((value) => {
@@ -116,9 +117,8 @@ class DatabaseService {
 
     print(groupIds);
     await Future.wait(groupIds.map((groupId) async {
-
-      DocumentSnapshot snapshot =  await groupsCollection.doc(groupId).get();
-      if(snapshot.exists) {
+      DocumentSnapshot snapshot = await groupsCollection.doc(groupId).get();
+      if (snapshot.exists) {
         print('Document exists');
 
         Group group = _groupFromSnapshot(snapshot);
@@ -127,7 +127,6 @@ class DatabaseService {
         print('Snapshot does not exist');
       }
     }));
-
 
     print('**************');
     print(groups.length);
@@ -167,5 +166,24 @@ class DatabaseService {
         groups: snapshot.data()['groups'],
         phoneNumber: snapshot.data()['phoneNumber'],
         profileUrl: snapshot.data()['profileUrl']);
+  }
+
+  Future<List<UserData>> getUsers(List<dynamic> userPhone) async {
+    List<UserData> users = new List<UserData>();
+
+    await Future.wait(userPhone.map((phone) async {
+      UserData user = await getUserData(phone).then((user) {
+        if (user == null) {
+          print('USER RECIEVED IS NULL in getUSers from getUserdata');
+        } else {
+          users.add(user);
+        }
+        return user;
+      });
+    }));
+
+    print('returning users with length ${users.length}');
+    // print('users in ')
+    return users;
   }
 }

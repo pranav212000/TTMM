@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:contacts_service/contacts_service.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -81,19 +80,10 @@ class _AddGroupState extends State<AddGroup> {
 
   @override
   void initState() {
-    // TODO: implement initState
-
     // getUserPhone();
 
     getUsersData(widget.selectedNumbers);
     super.initState();
-  }
-
-  @override
-  void dispose() {
-    // TODO: implement dispose
-
-    super.dispose();
   }
 
   @override
@@ -108,7 +98,7 @@ class _AddGroupState extends State<AddGroup> {
             String uid = Uuid().v1();
             if (_image != null) {
               StorageUploadTask storageUploadTask =
-                  reference.child("${uid}.jpg").putFile(_image);
+                  reference.child("$uid.jpg").putFile(_image);
 
               if (storageUploadTask.isSuccessful ||
                   storageUploadTask.isComplete) {

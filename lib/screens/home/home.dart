@@ -8,10 +8,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ttmm/models/group.dart';
 import 'package:ttmm/models/user.dart';
 import 'package:ttmm/screens/contacts/contacts_page.dart';
+import 'package:ttmm/screens/home/group_list.dart';
 import 'package:ttmm/screens/home/register.dart';
 import 'package:ttmm/services/auth.dart';
 import 'package:ttmm/services/database.dart';
 import 'package:ttmm/shared/constants.dart';
+import 'package:ttmm/shared/drawer.dart';
 import 'package:ttmm/shared/loading.dart';
 import 'package:ttmm/wrapper.dart';
 
@@ -25,7 +27,6 @@ class _HomeState extends State<Home> {
 
   final CollectionReference users =
       FirebaseFirestore.instance.collection('users');
-  UserData _userData;
   List<Group> _userGroups;
   bool _loadingGroups = true;
 
@@ -117,7 +118,6 @@ class _HomeState extends State<Home> {
 
   @override
   void dispose() {
-    // TODO: implement dispose
     _userGroups = null;
     super.dispose();
   }
@@ -169,50 +169,7 @@ class _HomeState extends State<Home> {
                       ))
                 ],
               ),
-              drawer: Drawer(
-                child: ListView(
-                  children: [
-                    UserAccountsDrawerHeader(
-                      accountName:
-                          Text(userData == null ? 'New User' : userData.name),
-                      accountEmail: Text(
-                          userData == null ? 'New User' : userData.phoneNumber),
-                      arrowColor: Colors.red,
-                      currentAccountPicture: Container(
-                        child: userData == null
-                            ? CircleAvatar(
-                                radius: 70,
-                                child: Icon(
-                                  Icons.add_a_photo,
-                                  size: 60,
-                                ))
-                            : CircleAvatar(
-                                radius: 70,
-                                backgroundImage:
-                                    Image.network(userData.profileUrl).image),
-                      ),
-                    ),
-                    ListTile(
-                      visualDensity: VisualDensity(horizontal: 0, vertical: -4),
-                      title: Text(
-                        'Home',
-                      ),
-                      leading: Icon(
-                        Icons.home,
-                        color: Colors.blue,
-                      ),
-                    ),
-                    ListTile(
-                      leading: Icon(
-                        Icons.exit_to_app,
-                        color: Colors.blue,
-                      ),
-                      visualDensity: VisualDensity(horizontal: 0, vertical: -4),
-                      title: Text('Signout'),
-                    ),
-                  ],
-                ),
-              ),
+              drawer: MyDrawer(userData: userData),
               floatingActionButton: FloatingActionButton.extended(
                 onPressed: () async {
                   final PermissionStatus permissionStatus =
@@ -255,16 +212,7 @@ class _HomeState extends State<Home> {
                   ? Loading()
                   : ((_userGroups.length == 0 && !_loadingGroups)
                       ? Center(child: Text('No groups yet'))
-                      : ListView.builder(
-                          itemCount: _userGroups.length ?? 0,
-                          itemBuilder: (BuildContext context, int index) {
-                            return ListTile(
-                              title: Text(
-                                  _userGroups.elementAt(index).groupName ??
-                                      "No name to group"),
-                            );
-                          },
-                        )),
+                      : GroupList(groups: _userGroups)),
             );
           } else {
             return Loading();

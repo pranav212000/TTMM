@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:ttmm/models/user.dart';
 
 import 'package:ttmm/services/auth.dart';
 import 'package:ttmm/services/database.dart';
@@ -174,12 +173,6 @@ class _RegisterState extends State<Register> {
 
                       print('User Added');
 
-                      UserData userData = UserData(
-                          uid: widget.user.uid,
-                          phoneNumber: widget.user.phoneNumber,
-                          name: _name,
-                          profileUrl: url,
-                          groups: List<String>());
 
                       // prefs
                       //     .setString(
