@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ttmm/models/group.dart';
 import 'package:ttmm/models/user.dart';
-import 'package:ttmm/screens/grouphome/group_home.dart';
 import 'package:ttmm/services/database.dart';
 import 'package:ttmm/shared/constants.dart';
+import 'package:ttmm/screens/grouphome/group_home.dart';
 
 class GroupListItem extends StatefulWidget {
   final Group group;
@@ -61,7 +62,7 @@ class _GroupListItemState extends State<GroupListItem> {
       child: ListTile(
         contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
         title: Text(widget.group.groupName ?? "No name to group"),
-        subtitle: _loading ? Text('null') : getSubtitle(),
+        subtitle: _loading ? Text('') : getSubtitle(),
         leading: CircleAvatar(
           backgroundImage: widget.group.groupIconUrl == null
               ? Image.asset('assets/images/group_image.png').image

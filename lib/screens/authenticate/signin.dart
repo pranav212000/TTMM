@@ -36,7 +36,7 @@ class SignIn extends StatelessWidget {
                 TextFormField(
                   keyboardType: TextInputType.number,
                   decoration:
-                      textInputDecoration.copyWith(hintText: "Phone Number"),
+                      textInputDecoration.copyWith(hintText: "Phone Number", labelText: 'Phone Number',),
                   validator: (val) {
                     if (val.isEmpty) {
                       return 'Please enter phone number';

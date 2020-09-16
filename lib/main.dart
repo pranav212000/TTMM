@@ -39,18 +39,8 @@ class App extends StatelessWidget {
                   color: Colors.blue,
                 ),
               ),
-              initialRoute: '/',
-              routes: {
-                // When navigating to the "/" route, build the FirstScreen widget.
-                '/': (context) => Wrapper(),
-                // When navigating to the "/second" route, build the SecondScreen widget.
-                '/home': (context) => Home(),
-                '/contacts' : (context) => ContactsPage(),
-                
-
-              },
-
-              // home: Wrapper(),
+              // TODO change home
+              home: Wrapper(),
               // home: SignIn(),
             ),
           );

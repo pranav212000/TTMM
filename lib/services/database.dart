@@ -42,10 +42,9 @@ class DatabaseService {
   //   return
   // }
 
-  Future getUserData(String phoneNumber) async {
+  Future<UserData> getUserData(String phoneNumber) async {
     DocumentSnapshot snapshot = await usersCollection.doc(phoneNumber).get();
     if (snapshot.exists) {
-      print('SNAPSHOT EXIST');
       Map<String, dynamic> _data = snapshot.data();
       return UserData(
           uid: _data['uid'],
@@ -54,7 +53,6 @@ class DatabaseService {
           phoneNumber: _data['phoneNumber'],
           profileUrl: _data['profileUrl']);
     } else {
-      print('SNAPSHOT DOESN"T EXIST');
       return null;
     }
   }
@@ -90,27 +88,7 @@ class DatabaseService {
             });
           })
         });
-    //     .set({groupMembers: phoneNumbers, 'groupIconUrl': groupIconUrl}).then(
-    //         (reference) {
-    //   phoneNumbers.forEach((phoneNumber) {
-    //     usersCollection.doc(phoneNumber).update({
-    //       'groups': FieldValue.arrayUnion([reference.id])
-    //     });
-    //   });
-    // });
   }
-
-  // Group _groupFromSnapshot(DocumentSnapshot snapshot) {
-  //   return Group(
-  //       groupId: snapshot.data()[constants.groupId],
-  //       groupName: snapshot.data()[constants.groupName],
-  //       groupIconUrl: snapshot.data()[constants.groupIconUrl],
-  //       groupMembers: snapshot.data()[constants.groupMembers]);
-  // }
-
-  // Stream<List<Group>> get userGroups {
-  //   return usersCollection.doc(phoneNumber).get()
-  // }
 
   Future<List<Group>> getUserGroups(List<dynamic> groupIds) async {
     List<Group> groups = new List<Group>();
@@ -119,17 +97,11 @@ class DatabaseService {
     await Future.wait(groupIds.map((groupId) async {
       DocumentSnapshot snapshot = await groupsCollection.doc(groupId).get();
       if (snapshot.exists) {
-        print('Document exists');
-
         Group group = _groupFromSnapshot(snapshot);
         groups.add(group);
-      } else {
-        print('Snapshot does not exist');
       }
     }));
 
-    print('**************');
-    print(groups.length);
     return groups;
   }
 
@@ -152,20 +124,19 @@ class DatabaseService {
 
   UserData _userDataFromSnapshot(DocumentSnapshot snapshot) {
     if (snapshot != null) {
-      print('snapshot is not null');
-      if (snapshot.data() != null)
-        print('snapshot data is not null');
-      else
+      if (snapshot.data() == null)
         print('snapshot data is null');
+      else
+        return UserData(
+            uid: snapshot.data()['uid'],
+            name: snapshot.data()['name'],
+            groups: snapshot.data()['groups'],
+            phoneNumber: snapshot.data()['phoneNumber'],
+            profileUrl: snapshot.data()['profileUrl']);
     } else
       print('snapshot is null');
 
-    return UserData(
-        uid: snapshot.data()['uid'],
-        name: snapshot.data()['name'],
-        groups: snapshot.data()['groups'],
-        phoneNumber: snapshot.data()['phoneNumber'],
-        profileUrl: snapshot.data()['profileUrl']);
+    return null;
   }
 
   Future<List<UserData>> getUsers(List<dynamic> userPhone) async {
@@ -186,4 +157,9 @@ class DatabaseService {
     // print('users in ')
     return users;
   }
+
+  // Stream<UserData> userData {
+  //   return
+  // }
+
 }

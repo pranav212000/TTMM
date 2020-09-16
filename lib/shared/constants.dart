@@ -6,7 +6,7 @@ const textInputDecoration = InputDecoration(
       borderSide: BorderSide(color: Colors.amber, width: 2.0)),
   focusedBorder: OutlineInputBorder(
       borderSide: BorderSide(color: Colors.deepPurple, width: 2.0,)),
-  labelText: 'Group Name',
+  
   labelStyle: TextStyle(color: Colors.redAccent)
 );
 

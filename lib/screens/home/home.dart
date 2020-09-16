@@ -14,8 +14,8 @@ import 'package:ttmm/services/auth.dart';
 import 'package:ttmm/services/database.dart';
 import 'package:ttmm/shared/constants.dart';
 import 'package:ttmm/shared/drawer.dart';
-import 'package:ttmm/shared/loading.dart';
 import 'package:ttmm/wrapper.dart';
+
 
 class Home extends StatefulWidget {
   @override
@@ -48,16 +48,6 @@ class _HomeState extends State<Home> {
         } else {
           preferences.setString(currentUser, user.uid);
           preferences.setString(currentPhoneNUmber, user.phoneNumber);
-          // setState(() {
-          //   _userData = UserData(
-          //       uid: snapshot.data()['uid'],
-          //       name: snapshot.data()['name'],
-          //       groups: snapshot.data()['groups'],
-          //       phoneNumber: snapshot.data()['phoneNumber'],
-          //       profileUrl: snapshot.data()['profileUrl']);
-          //
-          //   print(_userData.toString());
-          // });
 
           print('Document exists');
         }
@@ -88,32 +78,33 @@ class _HomeState extends State<Home> {
             .getUserGroups(userData.groups);
 
     print('user groups length after await : ${userGroups.length}');
-    if (this.mounted)
-      setState(() {
-        print('IN SET STATE');
-        if (userGroups != null) {
-          userGroups.sort((a, b) => a.updateTime.compareTo(b.updateTime));
-          print('user groups length : ${userGroups.length}');
-          _userGroups = userGroups.reversed.toList();
-        } else
-          _userGroups = new List<Group>();
+    if (this.mounted) {
+      // if ()
+      print('IN HOME');
 
-        _loadingGroups = false;
-        print('Loading complete in then');
-      });
-    // }).catchError((e) {
-    //   setState(() {
-    //     print('IN SET STATE');
-    //
-    //     _loadingGroups = false;
-    //     print(e.toString());
-    //     print('loading done in on error');
-    //   });
-    //
-    //   _scaffoldKey.currentState
-    //       .showSnackBar(SnackBar(content: Text('Could not load groups')));
-    //   print('Could not load groups');
-    // });
+      if (_userGroups != userGroups)
+        setState(() {
+          print('IN SET STATE');
+          if (userGroups != null) {
+            userGroups.sort((a, b) => a.updateTime.compareTo(b.updateTime));
+            print('user groups length : ${userGroups.length}');
+            _userGroups = userGroups.reversed.toList();
+          } else
+            _userGroups = new List<Group>();
+
+          _loadingGroups = false;
+          print('Loading complete in then');
+        });
+    } else {
+      print('NOT CURRENT ROUTE');
+    }
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+
+    super.initState();
   }
 
   @override
@@ -122,33 +113,24 @@ class _HomeState extends State<Home> {
     super.dispose();
   }
 
+  Future<UserData> _getUserData(firebaseAuth.User firebaseuser) async {
+    UserData userData =
+        await DatabaseService().getUserData(firebaseuser.phoneNumber);
+
+    return userData;
+  }
+
   @override
   Widget build(BuildContext context) {
     final firebaseuser = Provider.of<firebaseAuth.User>(context);
 
-    // if (_userData == null) getUserData(firebaseuser);
-    print(
-        '-------------------------------------------------------------------------------------------------------');
-    return StreamBuilder<UserData>(
-        stream: DatabaseService(phoneNumber: firebaseuser.phoneNumber).userData,
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            UserData userData = snapshot.data;
-            print(userData.toJson());
-            if (_userGroups == null) {
-              print('get groups');
-              getUserGroups(firebaseuser, userData);
-            } else if ((_userGroups.length != userData.groups.length) &&
-                !_loadingGroups) {
-              print(_loadingGroups);
-              print('getting groups');
-              _loadingGroups = true;
-              getUserGroups(firebaseuser, userData);
-            } else {
-              print('Groups length : ${_userGroups.length}');
-              print('Loading in stream builder $_loadingGroups');
-            }
-            // print(userData.groups.length);
+    return FutureBuilder<UserData>(
+      future: _getUserData(firebaseuser),
+      builder: (BuildContext context, AsyncSnapshot<UserData> snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Scaffold(body: Center(child: CircularProgressIndicator()));
+        } else {
+          if (snapshot.data != null)
             return Scaffold(
               key: _scaffoldKey,
               appBar: AppBar(
@@ -169,7 +151,7 @@ class _HomeState extends State<Home> {
                       ))
                 ],
               ),
-              drawer: MyDrawer(userData: userData),
+              drawer: MyDrawer(userData: snapshot.data),
               floatingActionButton: FloatingActionButton.extended(
                 onPressed: () async {
                   final PermissionStatus permissionStatus =
@@ -198,7 +180,7 @@ class _HomeState extends State<Home> {
                                 CupertinoDialogAction(
                                   child: Text('OK'),
                                   onPressed: () => Navigator.of(context).pop(),
-                                )
+                                ),
                               ],
                             ));
                   }
@@ -206,17 +188,44 @@ class _HomeState extends State<Home> {
                 label: Text('Add Group'),
                 icon: Icon(Icons.add),
               ),
-              body: (_loadingGroups ||
-                      (_userGroups != null ? _userGroups.length : 0) !=
-                          userData.groups.length)
-                  ? Loading()
-                  : ((_userGroups.length == 0 && !_loadingGroups)
-                      ? Center(child: Text('No groups yet'))
-                      : GroupList(groups: _userGroups)),
+              // body: (_loadingGroups ||
+              //         (_userGroups != null ? _userGroups.length : 0) !=
+              //             userData.groups.length)
+              //     ? Loading()
+              // : ((_userGroups.length == 0 && !_loadingGroups)
+              body: snapshot.data.groups.length == 0
+                  ? Center(child: Text('No groups yet'))
+                  : GroupList(
+                      groupIds: snapshot.data.groups,
+                    ),
             );
-          } else {
-            return Loading();
-          }
-        });
+          else
+            return Center(
+              child: Text('No Groups YEt!'),
+            );
+        }
+      },
+    );
+
+    // // if (_userData == null) getUserData(firebaseuser);
+    // return StreamBuilder<UserData>(
+    //     stream: DatabaseService(phoneNumber: firebaseuser.phoneNumber).userData,
+    //     builder: (context, snapshot) {
+    //       if (snapshot.hasData) {
+    //         UserData userData = snapshot.data;
+    //         print(userData.toJson());
+    //         // if (_userGroups == null) {
+    //         // getUserGroups(firebaseuser, userData);
+    //         // } else if ((_userGroups.length != userData.groups.length) &&
+    //         // !_loadingGroups) {
+    //         // _loadingGroups = true;
+    //         // getUserGroups(firebaseuser, userData);
+    //         // }
+    //         // print(userData.groups.length);
+    //
+    //       } else {
+    //         return CircularProgressIndicator();
+    //       }
+    //     });
   }
 }
