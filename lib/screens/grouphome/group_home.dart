@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:ttmm/models/group.dart';
+import 'package:ttmm/services/database.dart';
 import 'package:ttmm/shared/constants.dart';
 
 class GroupHome extends StatefulWidget {
@@ -86,8 +87,12 @@ class _GroupHomeState extends State<GroupHome> {
                             RaisedButton(
                               shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(10.0)),
+                                  color: Colors.blue,
                               onPressed: () {
-                                if (_formKey.currentState.validate()) {}
+                                if (_formKey.currentState.validate()) {
+                                  // DatabaseService().addEvent(widget.group.groupId);
+
+                                }
                               },
                               child: Text('Create'),
                             )

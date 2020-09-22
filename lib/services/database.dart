@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ttmm/models/group.dart';
 import 'package:ttmm/models/user.dart';
 import 'package:ttmm/shared/constants.dart' as constants;
+import 'package:uuid/uuid.dart';
 
 class DatabaseService {
   final String phoneNumber;
@@ -76,6 +77,7 @@ class DatabaseService {
     });
 
     await groupsCollection.doc(id).set({
+      constants.groupId: id,
       constants.groupName: name,
       constants.groupIconUrl: url,
       constants.groupMembers: phoneNumbers,
@@ -161,5 +163,22 @@ class DatabaseService {
   // Stream<UserData> userData {
   //   return
   // }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 }
