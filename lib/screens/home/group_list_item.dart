@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ttmm/models/group.dart';
-import 'package:ttmm/models/user.dart';
+import 'package:ttmm/models/userdata.dart';
 import 'package:ttmm/services/database.dart';
 import 'package:ttmm/shared/constants.dart';
 import 'package:ttmm/screens/grouphome/group_home.dart';

@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ttmm/models/group.dart';
-import 'package:ttmm/models/user.dart';
+import 'package:ttmm/models/userdata.dart';
 import 'package:ttmm/shared/constants.dart' as constants;
 import 'package:uuid/uuid.dart';
 

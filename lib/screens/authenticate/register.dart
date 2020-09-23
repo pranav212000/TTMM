@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:firebase_auth/firebase_auth.dart' as firebaseAuth;
@@ -6,9 +7,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:ttmm/models/userdata.dart';
 
 import 'package:ttmm/services/auth.dart';
 import 'package:ttmm/services/database.dart';
+import 'package:ttmm/services/user_api_service.dart';
 import 'package:ttmm/shared/constants.dart';
 
 class Register extends StatefulWidget {
@@ -156,14 +159,31 @@ class _RegisterState extends State<Register> {
 
                       //Here you can get the download URL when the task has been completed.
                       print("Download URL " + url.toString());
+                      // TODO add the api post!!!
 
-                      DatabaseService(phoneNumber: widget.user.phoneNumber)
-                          .updateUserData(
-                              widget.user.uid,
-                              widget.user.phoneNumber,
-                              _name,
-                              url,
-                              List<String>());
+                      UserData udata = new UserData(
+                          uid: widget.user.uid,
+                          phoneNumber: widget.user.phoneNumber,
+                          name: _name,
+                          profileUrl: url);
+
+                      print('SENDING THIS : ');
+                      print(json.encode(udata));
+
+                      //TODO :  USE CONVERTORS HERE!!!
+                      await UserApiService.create()
+                          .addUser(udata.toJson())
+                          .then((response) => print(response))
+                          .catchError((err) => print(err))
+                          .whenComplete(() => Navigator.of(context).pop());
+
+                      // DatabaseService(phoneNumber: widget.user.phoneNumber)
+                      //     .updateUserData(
+                      //         widget.user.uid,
+                      //         widget.user.phoneNumber,
+                      //         _name,
+                      //         url,
+                      //         List<String>());
 
                       SharedPreferences preferences =
                           await SharedPreferences.getInstance();
@@ -172,7 +192,6 @@ class _RegisterState extends State<Register> {
                           currentPhoneNUmber, widget.user.phoneNumber);
 
                       print('User Added');
-
 
                       // prefs
                       //     .setString(

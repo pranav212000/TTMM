@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:ttmm/models/user.dart';
+import 'package:ttmm/models/userdata.dart';
 
 class MyDrawer extends StatelessWidget {
   UserData userData;
