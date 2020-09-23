@@ -8,6 +8,7 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ttmm/models/userdata.dart';
+import 'package:ttmm/screens/home/home.dart';
 
 import 'package:ttmm/services/auth.dart';
 import 'package:ttmm/services/database.dart';
@@ -161,18 +162,18 @@ class _RegisterState extends State<Register> {
                       print("Download URL " + url.toString());
                       // TODO add the api post!!!
 
-                      UserData udata = new UserData(
+                      UserData userData = new UserData(
                           uid: widget.user.uid,
                           phoneNumber: widget.user.phoneNumber,
                           name: _name,
+                          groups: [],
                           profileUrl: url);
 
                       print('SENDING THIS : ');
-                      print(json.encode(udata));
+                      print(json.encode(userData));
 
-                      //TODO :  USE CONVERTORS HERE!!!
                       await UserApiService.create()
-                          .addUser(udata.toJson())
+                          .addUser(userData.toJson())
                           .then((response) => print(response))
                           .catchError((err) => print(err))
                           .whenComplete(() => Navigator.of(context).pop());
@@ -201,7 +202,8 @@ class _RegisterState extends State<Register> {
                       //     .catchError((onError) =>
                       //         print('COuld not add to shared preferences'));
 
-                      Navigator.of(context).pop();
+                      Navigator.of(context).pushReplacement(
+                          MaterialPageRoute(builder: (context) => Home()));
                     } else {
                       //Catch any cases here that might come up like canceled, interrupted
                       print('Task not completed');

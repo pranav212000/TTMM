@@ -17,7 +17,8 @@ abstract class UserApiService extends ChopperService {
     final client = ChopperClient(
         baseUrl: 'https://ttmm-pp.herokuapp.com/api',
         services: [_$UserApiService()],
-        converter: JsonConverter());
+        converter: JsonConverter(),
+        interceptors: [HttpLoggingInterceptor()]);
     return _$UserApiService(client);
   }
 

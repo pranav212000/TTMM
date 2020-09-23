@@ -8,11 +8,11 @@ part of 'userdata.dart';
 
 UserData _$UserDataFromJson(Map<String, dynamic> json) {
   return UserData(
-      uid: json['uid'] as String,
-      name: json['name'] as String,
-      phoneNumber: json['phoneNumber'] as String,
+      uid: json['uid'],
+      name: json['name'],
+      phoneNumber: json['phoneNumber'],
       groups: json['groups'] as List,
-      profileUrl: json['profileUrl'] as String);
+      profileUrl: json['profileUrl']);
 }
 
 Map<String, dynamic> _$UserDataToJson(UserData instance) => <String, dynamic>{

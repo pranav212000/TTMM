@@ -1,3 +1,4 @@
+import 'package:chopper/chopper.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebaseAuth;
 import 'package:flutter/cupertino.dart';
@@ -12,10 +13,10 @@ import 'package:ttmm/screens/home/group_list.dart';
 import 'package:ttmm/screens/authenticate/register.dart';
 import 'package:ttmm/services/auth.dart';
 import 'package:ttmm/services/database.dart';
+import 'package:ttmm/services/user_api_service.dart';
 import 'package:ttmm/shared/constants.dart';
 import 'package:ttmm/shared/drawer.dart';
 import 'package:ttmm/wrapper.dart';
-
 
 class Home extends StatefulWidget {
   @override
@@ -31,6 +32,15 @@ class _HomeState extends State<Home> {
   bool _loadingGroups = true;
 
   Future getUserData(firebaseAuth.User user) async {
+    try {
+      UserApiService.create().checkUserExists(user.uid).then((response) {
+        print("RESPONSE BODY : ");
+        print(response.body);
+      });
+    } catch (e) {
+      print(e.toString());
+    }
+
     try {
       SharedPreferences preferences = await SharedPreferences.getInstance();
 
@@ -114,10 +124,23 @@ class _HomeState extends State<Home> {
   }
 
   Future<UserData> _getUserData(firebaseAuth.User firebaseuser) async {
-    UserData userData =
-        await DatabaseService().getUserData(firebaseuser.phoneNumber);
+    Response response = await UserApiService.create().getUser(firebaseuser.uid);
 
-    return userData;
+    if (response.statusCode == 200) {
+      UserData userData = UserData.fromJson(response.body);
+      print('USER DATA FROM API : ');
+      print(userData.toJson());
+      return userData;
+    } else {
+      print('User not found!');
+
+      return null;
+    }
+
+    // UserData userData =
+    //     await DatabaseService().getUserData(firebaseuser.phoneNumber);
+
+    // return userData;
   }
 
   @override
@@ -200,32 +223,20 @@ class _HomeState extends State<Home> {
                     ),
             );
           else
-            return Center(
-              child: Text('No Groups YEt!'),
-            );
+            return registerUser(firebaseuser);
         }
       },
     );
+  }
 
-    // // if (_userData == null) getUserData(firebaseuser);
-    // return StreamBuilder<UserData>(
-    //     stream: DatabaseService(phoneNumber: firebaseuser.phoneNumber).userData,
-    //     builder: (context, snapshot) {
-    //       if (snapshot.hasData) {
-    //         UserData userData = snapshot.data;
-    //         print(userData.toJson());
-    //         // if (_userGroups == null) {
-    //         // getUserGroups(firebaseuser, userData);
-    //         // } else if ((_userGroups.length != userData.groups.length) &&
-    //         // !_loadingGroups) {
-    //         // _loadingGroups = true;
-    //         // getUserGroups(firebaseuser, userData);
-    //         // }
-    //         // print(userData.groups.length);
-    //
-    //       } else {
-    //         return CircularProgressIndicator();
-    //       }
-    //     });
+  Widget registerUser(firebaseAuth.User firebaseUser) {
+    Future.delayed(Duration.zero, () {
+      Navigator.of(context).push(MaterialPageRoute(
+          builder: (context) => Register(
+                user: firebaseUser,
+              )));
+    });
+
+    return Scaffold(body: Center(child: Text('User not registered yet')));
   }
 }

@@ -9,9 +9,18 @@ import 'package:ttmm/services/auth.dart';
 import 'package:ttmm/shared/error.dart';
 import 'package:ttmm/shared/loading.dart';
 import 'package:ttmm/wrapper.dart';
+import 'package:logging/logging.dart';
 
 void main() {
+  _setUpLogging();
   runApp(App());
+}
+
+void _setUpLogging() {
+  Logger.root.level = Level.ALL;
+  Logger.root.onRecord.listen((rec) {
+    print('${rec.level.name} : ${rec.time} : ${rec.message}');
+  });
 }
 
 class App extends StatelessWidget {

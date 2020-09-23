@@ -1,4 +1,5 @@
 import 'package:chopper/chopper.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'userdata.g.dart';
@@ -8,13 +9,12 @@ class UserData {
   String uid;
   String name;
   String phoneNumber;
-  List<dynamic> groups;
+  List<dynamic> groups = new List<dynamic>();
   String profileUrl;
 
-  
-
   UserData(
-      {this.uid, this.name, this.phoneNumber, this.groups, this.profileUrl});
+      {@required this.uid,@required this.name,@required this.phoneNumber, this.groups, this.profileUrl});
+
 
   // Map<String, dynamic> toJson() => {
   //       'uid': this.uid,
@@ -41,11 +41,8 @@ class UserData {
 
   String getProfileUrl() => this.profileUrl;
 
-
-
   factory UserData.fromJson(Map<String, dynamic> json) =>
       _$UserDataFromJson(json);
 
-      
   Map<String, dynamic> toJson() => _$UserDataToJson(this);
 }
