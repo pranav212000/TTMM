@@ -192,16 +192,6 @@ class _RegisterState extends State<Register> {
                       preferences.setString(
                           currentPhoneNUmber, widget.user.phoneNumber);
 
-                      print('User Added');
-
-                      // prefs
-                      //     .setString(
-                      //         currentUser, userData.uid)
-                      //     .whenComplete(
-                      //         () => print('User added to shared preferences'))
-                      //     .catchError((onError) =>
-                      //         print('COuld not add to shared preferences'));
-
                       Navigator.of(context).pushReplacement(
                           MaterialPageRoute(builder: (context) => Home()));
                     } else {

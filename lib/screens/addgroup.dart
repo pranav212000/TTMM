@@ -1,11 +1,16 @@
 import 'dart:io';
 
+import 'package:chopper/chopper.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:ttmm/models/group.dart';
 import 'package:ttmm/models/userdata.dart';
 import 'package:ttmm/services/database.dart';
+import 'package:ttmm/services/group_api_service.dart';
+import 'package:ttmm/services/user_api_service.dart';
 import 'package:ttmm/shared/constants.dart';
 import 'package:uuid/uuid.dart';
 
@@ -26,6 +31,7 @@ class _AddGroupState extends State<AddGroup> {
   Image image;
   final picker = ImagePicker();
   final _formKey = GlobalKey<FormState>();
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
   String groupName = '';
 
   final StorageReference reference =
@@ -49,7 +55,11 @@ class _AddGroupState extends State<AddGroup> {
       selectedContacts.insert(0, phoneNumber);
 
     Future.wait(selectedContacts.map((number) async {
-      UserData userData = await DatabaseService().getUserData(number);
+      // UserData userData = await DatabaseService().getUserData(number);
+
+      Response response = await UserApiService.create().getUser(number);
+      UserData userData = UserData.fromJson(response.body);
+
       if (userData != null) {
         print('User data not null');
         print(userData.profileUrl);
@@ -89,6 +99,7 @@ class _AddGroupState extends State<AddGroup> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(
         title: Text('Add Group'),
       ),
@@ -126,15 +137,40 @@ class _AddGroupState extends State<AddGroup> {
                 //Here you can get the download URL when the task has been completed.
                 print("Download URL " + url.toString());
 
-                // DatabaseService(uid: widget.user.uid).updateUserData(
-                //     widget.user.phoneNumber, _name, url, List<String>());
+                List<String> phoneNumbers = new List<String>();
 
-                DatabaseService()
-                    .addGroup(uid, groupName, _users, url)
-                    .then((value) {
-                  print('Group Added');
-                  Navigator.of(context).popUntil((route) => route.isFirst);
+                _users.forEach((user) {
+                  phoneNumbers.add(user.phoneNumber);
                 });
+
+                // for (UserData user in _users) {}
+
+                print(phoneNumbers);
+
+                Group group = new Group(
+                    groupId: uid,
+                    groupName: groupName,
+                    groupMembers: phoneNumbers,
+                    groupIconUrl: url);
+
+                Response response = await GroupApiService.create()
+                    .addGroup(group.toJson())
+                    .catchError((error) => print(error));
+                if (response.statusCode == 200) {
+                  print(response.body);
+                } else {
+                  showSnackbar(_scaffoldKey,
+                      'Could not add group, please try again later!!');
+                }
+
+                Navigator.of(context).popUntil((route) => route.isFirst);
+
+                // DatabaseService()
+                //     .addGroup(uid, groupName, _users, url)
+                //     .then((value) {
+                //   print('Group Added');
+                //   Navigator.of(context).popUntil((route) => route.isFirst);
+                // });
 
                 print('Group Added');
               } else {
@@ -142,12 +178,32 @@ class _AddGroupState extends State<AddGroup> {
                 print('Task not completed');
               }
             } else {
-              DatabaseService()
-                  .addGroup(uid, groupName, _users, null)
-                  .then((value) {
-                print('group Added');
-                Navigator.of(context).pop('OK');
+              List<String> phoneNumbers = new List<String>();
+
+              _users.forEach((user) {
+                phoneNumbers.add(user.phoneNumber);
               });
+
+              // for (UserData user in _users) {}
+
+              print(phoneNumbers);
+
+              Group group = new Group(
+                groupId: uid,
+                groupName: groupName,
+                groupMembers: phoneNumbers,
+              );
+              Response response = await GroupApiService.create()
+                  .addGroup(group.toJson())
+                  .catchError((error) => print(error));
+              if (response.statusCode == 200) {
+                print(response.body);
+              } else {
+                showSnackbar(_scaffoldKey,
+                    'Could not add group, please try again later!!');
+              }
+
+              Navigator.of(context).popUntil((route) => route.isFirst);
             }
           }
         },
@@ -220,11 +276,12 @@ class _AddGroupState extends State<AddGroup> {
                                     radius: 35,
                                     // backgroundImage: Image.asset('assets/images/profile_placeholder.jpg').image,
                                     backgroundImage: FadeInImage.assetNetwork(
-                                        placeholder:
-                                            'assets/images/profile_placeholder.jpg',
-                                        image: _users
-                                            .elementAt(index)
-                                            .getProfileUrl()).image,
+                                            placeholder:
+                                                'assets/images/profile_placeholder.jpg',
+                                            image: _users
+                                                .elementAt(index)
+                                                .getProfileUrl())
+                                        .image,
                                   ),
                                   _users.elementAt(index).phoneNumber ==
                                           _phoneNumber

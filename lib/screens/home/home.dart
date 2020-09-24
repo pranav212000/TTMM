@@ -31,41 +31,43 @@ class _HomeState extends State<Home> {
   List<Group> _userGroups;
   bool _loadingGroups = true;
 
-  Future getUserData(firebaseAuth.User user) async {
-    try {
-      UserApiService.create().checkUserExists(user.uid).then((response) {
-        print("RESPONSE BODY : ");
-        print(response.body);
-      });
-    } catch (e) {
-      print(e.toString());
-    }
+  Future<UserData> _future;
 
-    try {
-      SharedPreferences preferences = await SharedPreferences.getInstance();
+  // Future getUserData(firebaseAuth.User user) async {
+  //   try {
+  //     UserApiService.create().checkUserExists(user.uid).then((response) {
+  //       print("RESPONSE BODY : ");
+  //       print(response.body);
+  //     });
+  //   } catch (e) {
+  //     print(e.toString());
+  //   }
 
-      users.doc(user.phoneNumber).get().then((DocumentSnapshot snapshot) {
-        if (!snapshot.exists) {
-          print('Document doesn\'t exist');
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => Register(
-                user: user,
-              ),
-            ),
-          );
-        } else {
-          preferences.setString(currentUser, user.uid);
-          preferences.setString(currentPhoneNUmber, user.phoneNumber);
+  //   try {
+  //     SharedPreferences preferences = await SharedPreferences.getInstance();
 
-          print('Document exists');
-        }
-      });
-    } catch (e) {
-      print(e.toString());
-    }
-  }
+  //     users.doc(user.phoneNumber).get().then((DocumentSnapshot snapshot) {
+  //       if (!snapshot.exists) {
+  //         print('Document doesn\'t exist');
+  //         Navigator.push(
+  //           context,
+  //           MaterialPageRoute(
+  //             builder: (context) => Register(
+  //               user: user,
+  //             ),
+  //           ),
+  //         );
+  //       } else {
+  //         preferences.setString(currentUser, user.uid);
+  //         preferences.setString(currentPhoneNUmber, user.phoneNumber);
+
+  //         print('Document exists');
+  //       }
+  //     });
+  //   } catch (e) {
+  //     print(e.toString());
+  //   }
+  // }
 
   //Check contacts permission
   Future<PermissionStatus> _getPermission() async {
@@ -81,50 +83,18 @@ class _HomeState extends State<Home> {
     }
   }
 
-  Future getUserGroups(
-      firebaseAuth.User firebaseuser, UserData userData) async {
-    List<Group> userGroups =
-        await DatabaseService(phoneNumber: firebaseuser.phoneNumber)
-            .getUserGroups(userData.groups);
-
-    print('user groups length after await : ${userGroups.length}');
-    if (this.mounted) {
-      // if ()
-      print('IN HOME');
-
-      if (_userGroups != userGroups)
-        setState(() {
-          print('IN SET STATE');
-          if (userGroups != null) {
-            userGroups.sort((a, b) => a.updateTime.compareTo(b.updateTime));
-            print('user groups length : ${userGroups.length}');
-            _userGroups = userGroups.reversed.toList();
-          } else
-            _userGroups = new List<Group>();
-
-          _loadingGroups = false;
-          print('Loading complete in then');
-        });
-    } else {
-      print('NOT CURRENT ROUTE');
-    }
-  }
-
   @override
   void initState() {
     // TODO: implement initState
-
+    _future = _getUserData();
     super.initState();
   }
 
-  @override
-  void dispose() {
-    _userGroups = null;
-    super.dispose();
-  }
+  Future<UserData> _getUserData() async {
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    String phoneNumber = preferences.getString(currentPhoneNUmber);
 
-  Future<UserData> _getUserData(firebaseAuth.User firebaseuser) async {
-    Response response = await UserApiService.create().getUser(firebaseuser.uid);
+    Response response = await UserApiService.create().getUser(phoneNumber);
 
     if (response.statusCode == 200) {
       UserData userData = UserData.fromJson(response.body);
@@ -133,22 +103,17 @@ class _HomeState extends State<Home> {
       return userData;
     } else {
       print('User not found!');
-
       return null;
     }
-
-    // UserData userData =
-    //     await DatabaseService().getUserData(firebaseuser.phoneNumber);
-
-    // return userData;
   }
 
   @override
   Widget build(BuildContext context) {
     final firebaseuser = Provider.of<firebaseAuth.User>(context);
-
+    print('TIME STAMP : ');
+    
     return FutureBuilder<UserData>(
-      future: _getUserData(firebaseuser),
+      future: _future,
       builder: (BuildContext context, AsyncSnapshot<UserData> snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Scaffold(body: Center(child: CircularProgressIndicator()));

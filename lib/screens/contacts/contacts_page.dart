@@ -1,8 +1,13 @@
+import 'dart:convert';
+
+import 'package:chopper/chopper.dart';
 import 'package:flutter/material.dart';
 import 'package:contacts_service/contacts_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:ttmm/models/userdata.dart';
 import 'package:ttmm/screens/addgroup.dart';
 import 'package:ttmm/services/database.dart';
+import 'package:ttmm/services/user_api_service.dart';
 import 'package:ttmm/shared/constants.dart';
 
 class ContactsPage extends StatefulWidget {
@@ -15,6 +20,7 @@ class _ContactsPageState extends State<ContactsPage>
   List<Contact> _registeredContacts = new List<Contact>();
   List<Contact> _inviteContacts = new List<Contact>();
   String _phoneNumber;
+  String _uid;
   List<String> _selectedNumbers = new List<String>();
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   bool _isSyncComplete = false;
@@ -23,7 +29,7 @@ class _ContactsPageState extends State<ContactsPage>
   @override
   void initState() {
     getContacts();
-    getPhoneNumber();
+    getUserCredentials();
     super.initState();
     _tabController = TabController(length: 2, vsync: this, initialIndex: 0);
     _tabController.addListener(_handleTabIndex);
@@ -40,44 +46,55 @@ class _ContactsPageState extends State<ContactsPage>
     setState(() {});
   }
 
-  Future getPhoneNumber() async {
+  Future getUserCredentials() async {
     SharedPreferences preferences = await SharedPreferences.getInstance();
     setState(() {
       _phoneNumber = preferences.getString(currentPhoneNUmber);
+      _uid = preferences.getString(currentUser);
     });
   }
 
   Future<void> syncContacts(Iterable<Contact> contacts) async {
-    Future.wait(contacts.map((contact) async {
-      print('Phones Length :  ${contact.phones.length}');
+    Map<String, Contact> numberToContact = new Map<String, Contact>();
+    for (Contact contact in contacts) {
       if (contact.phones.length > 0) {
         String phoneNumber = contact.phones.first.value.replaceAll(' ', '');
-        print('Phone 0 : ${contact.phones.first.value}');
+        // print('Phone 0 : ${contact.phones.first.value}');
 
         if (phoneNumber.length == 10) {
           phoneNumber = '+91' + phoneNumber;
         }
-        bool isUserPresent =
-            await DatabaseService().checkUserPresent(phoneNumber);
-        if (isUserPresent) {
-          print('Adding to registered ${contact.phones.first.value}');
-          if (contact.phones.first.value.replaceAll(' ', '') != _phoneNumber)
-            _registeredContacts.add(contact);
-        } else {
-          print('Adding to invite ${contact.phones.first.value}');
-          _inviteContacts.add(contact);
-        }
+        numberToContact[phoneNumber] = contact;
       }
-    })).then((value) => setState(() {
-          _registeredContacts.sort((contact1, contact2) =>
-              contact1.displayName.compareTo(contact2.displayName));
-          _inviteContacts.sort((contact1, contact2) =>
-              contact1.displayName.compareTo(contact2.displayName));
+    }
 
-          _isSyncComplete = true;
+    print(numberToContact.keys);
 
-          print(' Invite contacts length : ${_inviteContacts.length}');
-        }));
+    Response response = await UserApiService.create()
+        .syncContacts({'contacts': numberToContact.keys.toList()});
+
+    List<dynamic> presentStatus = response.body;
+
+    for (dynamic status in presentStatus) {
+      Map<String, dynamic> map = new Map<String, dynamic>.from(status);
+      if (map.keys.elementAt(0) != _phoneNumber) {
+        if (map.values.elementAt(0))
+          _registeredContacts.add(numberToContact[map.keys.elementAt(0)]);
+        else
+          _inviteContacts.add(numberToContact[map.keys.elementAt(0)]);
+      }
+    }
+
+    setState(() {
+      _registeredContacts.sort((contact1, contact2) =>
+          contact1.displayName.compareTo(contact2.displayName));
+      _inviteContacts.sort((contact1, contact2) =>
+          contact1.displayName.compareTo(contact2.displayName));
+
+      _isSyncComplete = true;
+
+      print(' Invite contacts length : ${_inviteContacts.length}');
+    });
   }
 
   Future<void> getContacts() async {
@@ -111,15 +128,6 @@ class _ContactsPageState extends State<ContactsPage>
         visible: _isSyncComplete,
         child: _fabs(),
       ),
-      // child: FloatingActionButton(
-      //   onPressed: _isSyncComplete
-      //       ?
-      //       : null,
-      //   child: Icon(
-      //     Icons.navigate_next,
-      //   ),
-      // ),
-      // ),
       body: TabBarView(
         controller: _tabController,
         children: [
@@ -232,10 +240,6 @@ class _ContactsPageState extends State<ContactsPage>
                   ),
                   backgroundColor: Colors.red,
                 ));
-
-              // DatabaseService(uid: _uid)
-              //     .addGroup(phoneNumbers)
-              //     .whenComplete(() => print('Group Added'));
             },
             child: Icon(
               Icons.navigate_next,

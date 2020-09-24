@@ -1,31 +1,26 @@
 import 'package:chopper/chopper.dart';
 
-part 'user_api_service.chopper.dart';
+part 'group_api_service.chopper.dart';
 
-@ChopperApi(baseUrl: '/user')
-abstract class UserApiService extends ChopperService {
+@ChopperApi(baseUrl: '/group')
+abstract class GroupApiService extends ChopperService {
   // @Get(path: '/{uid}')
   // Future<Response> getUser(@Path('uid') String uid);
 
-  @Get(path: 'checkUser/{uid}')
-  Future<Response> checkUserExists(@Path('uid') String uid);
-
-  @Post(path: '/addUser')
-  Future<Response> addUser(@Body() Map<String, dynamic> body);
+  @Post(path: '/addGroup')
+  Future<Response> addGroup(@Body() Map<String, dynamic> body);
 
   @Get(path: '/')
-  Future<Response> getUser(@Query('phoneNumber') String uid);
+  Future<Response> getGroup(@Query('groupId') String groupId);
 
-  @Get(path: 'syncContacts')
-  Future<Response> syncContacts(@Body() Map<String, dynamic> body);
 
-  static UserApiService create() {
+  static GroupApiService create() {
     final client = ChopperClient(
         baseUrl: 'https://ttmm-pp.herokuapp.com/api',
-        services: [_$UserApiService()],
+        services: [_$GroupApiService()],
         converter: JsonConverter(),
         interceptors: [HttpLoggingInterceptor()]);
-    return _$UserApiService(client);
+    return _$GroupApiService(client);
   }
 
   // static UserApiService create() {

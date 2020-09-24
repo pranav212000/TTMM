@@ -17,7 +17,7 @@ class _GroupListState extends State<GroupList> {
     print("getting groups");
     List<Group> groups = await DatabaseService().getUserGroups(widget.groupIds);
 
-    groups.sort((a, b) => a.updateTime.compareTo(b.updateTime));
+    // groups.sort((a, b) => a.updateTime.compareTo(b.updateTime));
 
     print('user groups length : ${groups.length}');
 

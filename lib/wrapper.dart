@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebaseAuth;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ttmm/models/group.dart';
 import 'package:ttmm/screens/authenticate/register.dart';
 import 'package:ttmm/screens/authenticate/signin.dart';
@@ -10,6 +11,7 @@ import 'package:ttmm/screens/grouphome/group_home.dart';
 import 'package:ttmm/screens/home/home.dart';
 import 'package:ttmm/services/database.dart';
 import 'package:ttmm/services/user_api_service.dart';
+import 'package:ttmm/shared/constants.dart';
 import 'package:ttmm/shared/loading.dart';
 
 import 'models/userdata.dart';
@@ -28,8 +30,7 @@ class Wrapper extends StatelessWidget {
   }
 
   Future<UserData> _getUserData(firebaseAuth.User firebaseuser) async {
-    Response response =
-        await UserApiService.create().getUser(firebaseuser.uid);
+    Response response = await UserApiService.create().getUser(firebaseuser.uid);
 
     if (response.statusCode == 200) {
       UserData userData = UserData.fromJson(response.body);
@@ -49,7 +50,15 @@ class Wrapper extends StatelessWidget {
 
     if (user == null)
       return SignIn();
-    else
+    else {
+      setSharedPreferences(user);
       return Home();
+    }
+  }
+
+  void setSharedPreferences(firebaseAuth.User user) async {
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    preferences.setString(currentUser, user.uid);
+    preferences.setString(currentPhoneNUmber, user.phoneNumber);
   }
 }

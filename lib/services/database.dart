@@ -112,9 +112,9 @@ class DatabaseService {
         groupId: doc.data()[constants.groupId],
         groupName: doc.data()[constants.groupName],
         groupIconUrl: doc.data()[constants.groupIconUrl],
-        groupMembers: doc.data()[constants.groupMembers],
-        updateTime: doc.data()[constants.updateTime],
-        createdTime: doc.data()[constants.createdTime]);
+        groupMembers: doc.data()[constants.groupMembers]);
+    // updateTime: doc.data()[constants.updateTime],
+    // createdTime: doc.data()[constants.createdTime]);
   }
 
   Stream<UserData> get userData {
@@ -163,22 +163,5 @@ class DatabaseService {
   // Stream<UserData> userData {
   //   return
   // }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 }
