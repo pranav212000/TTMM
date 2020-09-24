@@ -158,6 +158,7 @@ class _AddGroupState extends State<AddGroup> {
                     .catchError((error) => print(error));
                 if (response.statusCode == 200) {
                   print(response.body);
+                  showSnackbar(_scaffoldKey, 'Group Added');
                 } else {
                   showSnackbar(_scaffoldKey,
                       'Could not add group, please try again later!!');
@@ -198,6 +199,7 @@ class _AddGroupState extends State<AddGroup> {
                   .catchError((error) => print(error));
               if (response.statusCode == 200) {
                 print(response.body);
+                showSnackbar(_scaffoldKey, 'Group Added');
               } else {
                 showSnackbar(_scaffoldKey,
                     'Could not add group, please try again later!!');

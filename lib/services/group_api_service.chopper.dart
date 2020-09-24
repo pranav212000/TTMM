@@ -27,4 +27,11 @@ class _$GroupApiService extends GroupApiService {
     final $request = Request('GET', $url, client.baseUrl, parameters: $params);
     return client.send<dynamic, dynamic>($request);
   }
+
+  Future<Response> getGroups(Map<String, dynamic> body) {
+    final $url = '/group/multiple';
+    final $body = body;
+    final $request = Request('GET', $url, client.baseUrl, body: $body);
+    return client.send<dynamic, dynamic>($request);
+  }
 }

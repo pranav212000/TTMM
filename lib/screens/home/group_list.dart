@@ -1,7 +1,9 @@
+import 'package:chopper/chopper.dart';
 import 'package:flutter/material.dart';
 import 'package:ttmm/models/group.dart';
 import 'package:ttmm/screens/home/group_list_item.dart';
 import 'package:ttmm/services/database.dart';
+import 'package:ttmm/services/group_api_service.dart';
 
 class GroupList extends StatefulWidget {
   final List<dynamic> groupIds;
@@ -15,13 +17,20 @@ class GroupList extends StatefulWidget {
 class _GroupListState extends State<GroupList> {
   Future getGroups() async {
     print("getting groups");
-    List<Group> groups = await DatabaseService().getUserGroups(widget.groupIds);
 
-    // groups.sort((a, b) => a.updateTime.compareTo(b.updateTime));
+    Response response =
+        await GroupApiService.create().getGroups({'groupIds': widget.groupIds});
+    // print(response.body);
 
-    print('user groups length : ${groups.length}');
+    List<dynamic> res = response.body;
+    List<Group> groups = new List<Group>();
 
-    return groups.reversed.toList();
+    for (dynamic item in res) {
+      groups.add(Group.fromJson(item));
+    }
+
+    // print(groups.toString());
+    return groups;
   }
 
   @override
@@ -34,12 +43,15 @@ class _GroupListState extends State<GroupList> {
             child: CircularProgressIndicator(),
           );
         } else {
-          return ListView.builder(
-            itemBuilder: (_, index) {
-              return GroupListItem(group: snapshot.data.elementAt(index));
-            },
-            itemCount: snapshot.data.length,
-          );
+          if (snapshot.data != null)
+            return ListView.builder(
+              itemBuilder: (_, index) {
+                return GroupListItem(group: snapshot.data.elementAt(index));
+              },
+              itemCount: snapshot.data.length,
+            );
+          else
+            return CircularProgressIndicator();
         }
       },
     );
@@ -52,5 +64,3 @@ class _GroupListState extends State<GroupList> {
     // );
   }
 }
-
-

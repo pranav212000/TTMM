@@ -110,7 +110,6 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     final firebaseuser = Provider.of<firebaseAuth.User>(context);
-    print('TIME STAMP : ');
     
     return FutureBuilder<UserData>(
       future: _future,
