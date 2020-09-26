@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:ttmm/models/event.dart';
 import 'package:ttmm/models/group.dart';
+import 'package:ttmm/screens/event/event_home.dart';
 import 'package:ttmm/services/database.dart';
 import 'package:ttmm/services/event_api_service.dart';
 import 'package:ttmm/shared/constants.dart';
@@ -140,9 +141,15 @@ class _GroupHomeState extends State<GroupHome> {
                 itemCount: snapshot.data.length,
                 itemBuilder: (BuildContext context, int index) {
                   Event event = snapshot.data.elementAt(index);
-                  return ListTile(
-                    title: Text(event.eventName),
-                    subtitle: Text("Last activity : ${event.updatedAt}"),
+                  return Card(
+                    child: ListTile(
+                      title: Text(event.eventName),
+                      subtitle: Text("Last activity : ${event.updatedAt}"),
+                      onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                          builder: (_) => EventHome(
+                                event: event,
+                              ))),
+                    ),
                   );
                 },
               );
@@ -154,6 +161,7 @@ class _GroupHomeState extends State<GroupHome> {
     );
   }
 
+// TODO card with spinning animation spins while appearing and spins while disappearing
   void addEvent(Event event) async {
     Response response = await EventApiService.create()
         .addEvent(widget.group.groupId, event.toJson());

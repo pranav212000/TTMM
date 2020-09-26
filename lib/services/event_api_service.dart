@@ -8,15 +8,17 @@ abstract class EventApiService extends ChopperService {
   // Future<Response> getUser(@Path('uid') String uid);
 
   @Post(path: '/addEvent')
-  Future<Response> addEvent(@Query('groupId') String groupId, @Body() Map<String, dynamic> body);
+  Future<Response> addEvent(
+      @Query('groupId') String groupId, @Body() Map<String, dynamic> body);
 
   @Get(path: '/')
-  Future<Response> getEvent(@Query('groupId') String groupId);
-
+  Future<Response> getEvent(@Query('eventId') String eventId);
 
   @Get(path: '/multiple')
   Future<Response> getEvents(@Body() Map<String, dynamic> body);
 
+  @Post(path: '/{eventId}/addOrder')
+  Future<Response> addOrder(@Path('eventId') eventId, @Body() Map<String, dynamic> body);
 
   static EventApiService create() {
     final client = ChopperClient(

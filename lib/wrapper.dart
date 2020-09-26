@@ -4,12 +4,15 @@ import 'package:firebase_auth/firebase_auth.dart' as firebaseAuth;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:ttmm/models/event.dart';
 import 'package:ttmm/models/group.dart';
 import 'package:ttmm/screens/authenticate/register.dart';
 import 'package:ttmm/screens/authenticate/signin.dart';
+import 'package:ttmm/screens/event/event_home.dart';
 import 'package:ttmm/screens/grouphome/group_home.dart';
 import 'package:ttmm/screens/home/home.dart';
 import 'package:ttmm/services/database.dart';
+import 'package:ttmm/services/event_api_service.dart';
 import 'package:ttmm/services/user_api_service.dart';
 import 'package:ttmm/shared/constants.dart';
 import 'package:ttmm/shared/loading.dart';
@@ -39,10 +42,11 @@ class Wrapper extends StatelessWidget {
       return userData;
     } else {
       print('User not found!');
-
       return null;
     }
   }
+
+ 
 
   @override
   Widget build(BuildContext context) {
@@ -50,9 +54,14 @@ class Wrapper extends StatelessWidget {
 
     if (user == null)
       return SignIn();
+    // else {
+    //   setSharedPreferences(user);
+    //   return Home();
+    // }
+// TODO fix this jugad!
     else {
-      setSharedPreferences(user);
-      return Home();
+
+      return EventHome();
     }
   }
 

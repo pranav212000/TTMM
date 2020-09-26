@@ -1,5 +1,6 @@
 import 'package:chopper/chopper.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebaseAuth;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -110,7 +111,7 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     final firebaseuser = Provider.of<firebaseAuth.User>(context);
-    
+
     return FutureBuilder<UserData>(
       future: _future,
       builder: (BuildContext context, AsyncSnapshot<UserData> snapshot) {
@@ -185,6 +186,9 @@ class _HomeState extends State<Home> {
                   : GroupList(
                       groupIds: snapshot.data.groups,
                     ),
+
+// TODO add bottom navigation bar
+              // bottomNavigationBar: CurvedNavigationBar(items: null),
             );
           else
             return registerUser(firebaseuser);

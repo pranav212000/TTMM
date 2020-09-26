@@ -34,8 +34,10 @@ class _GroupListItemState extends State<GroupListItem> {
     List<String> names = new List<String>();
 
     _users.forEach((user) {
-      names.add(user.name);
+      if (user.phoneNumber != _currentPhone) names.add(user.name);
     });
+
+    names.insert(0, 'You');
 
     if (names.length > 3) {
       subtitle = names.sublist(0, 2).join(',');
@@ -65,6 +67,12 @@ class _GroupListItemState extends State<GroupListItem> {
         _users = users;
         _loading = false;
       });
+  }
+
+  @override
+  void initState() {
+    getCurrentPhone();
+    super.initState();
   }
 
   @override
