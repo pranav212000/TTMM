@@ -40,4 +40,11 @@ class _$UserApiService extends UserApiService {
     final $request = Request('GET', $url, client.baseUrl, body: $body);
     return client.send<dynamic, dynamic>($request);
   }
+
+  Future<Response> getUsers(Map<String, dynamic> body) {
+    final $url = '/user/multiple';
+    final $body = body;
+    final $request = Request('GET', $url, client.baseUrl, body: $body);
+    return client.send<dynamic, dynamic>($request);
+  }
 }

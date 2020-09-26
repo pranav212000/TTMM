@@ -29,6 +29,7 @@ class _GroupListState extends State<GroupList> {
       groups.add(Group.fromJson(item));
     }
 
+    print(groups.toString());
     // print(groups.toString());
     return groups;
   }

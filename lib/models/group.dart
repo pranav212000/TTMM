@@ -11,12 +11,14 @@ class Group {
   String groupIconUrl;
   DateTime updatedAt;
   DateTime createdAt;
+  List<dynamic> groupEvents;
   List<dynamic> groupMembers;
 
   Group(
       {@required this.groupId,
       @required this.groupName,
       @required this.groupMembers,
+      this.groupEvents,
       this.updatedAt,
       this.createdAt,
       this.groupIconUrl});
