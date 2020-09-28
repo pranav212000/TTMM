@@ -40,7 +40,7 @@ class _GroupHomeState extends State<GroupHome> {
   @override
   Widget build(BuildContext context) {
     // print(ModalRoute.of(context).settings.name);
-    getEvents();
+    // getEvents();
     return Scaffold(
       key: _scaffoldKey,
       appBar: AppBar(
@@ -135,6 +135,7 @@ class _GroupHomeState extends State<GroupHome> {
             );
           } else {
             if (snapshot.data == null) {
+            } else if (snapshot.data.length == 0) {
               return Center(child: Text('No events yet!'));
             } else {
               return ListView.builder(

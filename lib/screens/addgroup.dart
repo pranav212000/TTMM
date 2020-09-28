@@ -205,7 +205,7 @@ class _AddGroupState extends State<AddGroup> {
                     'Could not add group, please try again later!!');
               }
 
-              Navigator.of(context).popUntil((route) => route.isFirst);
+              Navigator.of(context).pop('OK');
             }
           }
         },

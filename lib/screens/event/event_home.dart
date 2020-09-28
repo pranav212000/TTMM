@@ -30,10 +30,11 @@ class _EventHomeState extends State<EventHome> {
     Response response = await EventApiService.create()
         .getEvent("c18261e0-fe8e-11ea-8be7-dfe5aeefef5b");
     if (response.statusCode == 200) {
-      setState(() {
-        _event = Event.fromJson(response.body);
-        print(_event.eventName);
-      });
+      if (response.body != null)
+        setState(() {
+          _event = Event.fromJson(response.body);
+          print(_event.eventName);
+        });
     }
   }
 
@@ -42,12 +43,19 @@ class _EventHomeState extends State<EventHome> {
     _phoneNumber = preferences.getString(currentPhoneNUmber);
   }
 
+  Future getOrders() async {
+    Response response =
+        await EventApiService.create().getOrders(_event.eventId);
+    print(response.body);
+  }
+
   @override
   void initState() {
     if (widget.event == null) {
       _getEvent("c18261e0-fe8e-11ea-8be7-dfe5aeefef5b");
     }
     getPhoneNumber();
+    getOrders();
     super.initState();
   }
 

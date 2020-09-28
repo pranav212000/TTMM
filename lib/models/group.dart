@@ -18,10 +18,10 @@ class Group {
       {@required this.groupId,
       @required this.groupName,
       @required this.groupMembers,
-      this.groupEvents,
+      this.groupEvents = const [],
       this.updatedAt,
       this.createdAt,
-      this.groupIconUrl});
+      this.groupIconUrl = ""});
 
   factory Group.fromJson(Map<String, dynamic> json) => _$GroupFromJson(json);
 

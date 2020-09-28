@@ -37,10 +37,16 @@ class _$EventApiService extends EventApiService {
     return client.send<dynamic, dynamic>($request);
   }
 
-  Future<Response> addOrder(dynamic eventId, Map<String, dynamic> body) {
+  Future<Response> addOrder(String eventId, Map<String, dynamic> body) {
     final $url = '/event/${eventId}/addOrder';
     final $body = body;
     final $request = Request('POST', $url, client.baseUrl, body: $body);
+    return client.send<dynamic, dynamic>($request);
+  }
+
+  Future<Response> getOrders(String eventId) {
+    final $url = '/event/${eventId}/orders';
+    final $request = Request('GET', $url, client.baseUrl);
     return client.send<dynamic, dynamic>($request);
   }
 }
