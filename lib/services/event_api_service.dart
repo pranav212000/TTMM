@@ -30,7 +30,8 @@ abstract class EventApiService extends ChopperService {
         baseUrl: 'https://ttmm-pp.herokuapp.com/api',
         services: [_$EventApiService()],
         converter: JsonConverter(),
-        interceptors: [HttpLoggingInterceptor()]);
+        // interceptors: [HttpLoggingInterceptor()]
+        );
     return _$EventApiService(client);
   }
 

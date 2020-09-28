@@ -2,8 +2,10 @@ import 'package:chopper/chopper.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ttmm/models/event.dart';
+import 'package:ttmm/models/order.dart';
 import 'package:ttmm/services/event_api_service.dart';
 import 'package:ttmm/shared/constants.dart';
+import 'package:ttmm/shared/loading.dart';
 import 'package:uuid/uuid.dart';
 import 'package:validators/validators.dart';
 
@@ -20,22 +22,23 @@ class _EventHomeState extends State<EventHome> {
   int _quantity = 0;
   int _cost = 0;
   final _scaffoldKey = GlobalKey<ScaffoldState>();
+
   String _phoneNumber;
+  Future _future;
+  Future _orders;
 
   // TODO clear this shit jugad
   Event _event = new Event(
-      eventId: "c18261e0-fe8e-11ea-8be7-dfe5aeefef5b",
+      eventId: "8c6a84f0-0173-11eb-b751-cf68f76509dc",
       eventName: "EVENT LOADING");
   Future<Event> _getEvent(String eventId) async {
     Response response = await EventApiService.create()
-        .getEvent("c18261e0-fe8e-11ea-8be7-dfe5aeefef5b");
+        .getEvent("8c6a84f0-0173-11eb-b751-cf68f76509dc");
     if (response.statusCode == 200) {
-      if (response.body != null)
-        setState(() {
-          _event = Event.fromJson(response.body);
-          print(_event.eventName);
-        });
+      if (response.body != null) return Event.fromJson(response.body);
     }
+
+    return null;
   }
 
   Future getPhoneNumber() async {
@@ -46,90 +49,174 @@ class _EventHomeState extends State<EventHome> {
   Future getOrders() async {
     Response response =
         await EventApiService.create().getOrders(_event.eventId);
-    print(response.body);
+
+    List<Order> orders = new List<Order>();
+    if (response.statusCode == 200) {
+      if (response.body != null) {
+        for (dynamic item in response.body) {
+          Order order = Order.fromJson(item);
+          orders.add(order);
+        }
+        return orders;
+      } else
+        return null;
+    } else
+      print('ERROR');
   }
 
   @override
   void initState() {
     if (widget.event == null) {
-      _getEvent("c18261e0-fe8e-11ea-8be7-dfe5aeefef5b");
+      _future = _getEvent("8c6a84f0-0173-11eb-b751-cf68f76509dc");
     }
     getPhoneNumber();
-    getOrders();
+    _orders = getOrders();
     super.initState();
   }
 
+// TODO refresh the list of orders!!!
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      key: _scaffoldKey,
-      appBar: AppBar(
-        title: Text(_event.eventName),
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            flex: 5,
-            child: Container(
-              height: MediaQuery.of(context).size.width * 0.75,
-              child: _event.orders == null || _event.orders.length == 0
-                  ? Center(
-                      child: Text('No orders yet'),
-                    )
-                  : Card(
-                      child: ListView.builder(
-                        itemCount:
-                            _event.orders == null ? 0 : _event.orders.length,
-                        itemBuilder: (BuildContext context, int index) {
-                          return Text('HEY THERE');
-                        },
+    return FutureBuilder(
+      // TODO  future: _getEvent(widget.event.eventId),
+      future: _future,
+      builder: (BuildContext context, AsyncSnapshot snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting)
+          return Loading();
+        else {
+          if (snapshot.data == null) {
+            return Center(child: Text('Could not get the group'));
+          } else {
+            return Scaffold(
+              key: _scaffoldKey,
+              appBar: AppBar(
+                title: Text(snapshot.data.eventName),
+              ),
+              body: Column(
+                children: [
+                  Expanded(
+                    flex: 5,
+                    child: Container(
+                      height: MediaQuery.of(context).size.width * 0.75,
+                      child: snapshot.data.orders == null ||
+                              snapshot.data.orders.length == 0
+                          ? Center(
+                              child: Text('No orders yet'),
+                            )
+                          : Card(
+                              child: FutureBuilder(
+                                future: _orders,
+                                builder: (BuildContext context,
+                                    AsyncSnapshot snapshot) {
+                                  if (snapshot.connectionState ==
+                                      ConnectionState.waiting)
+                                    return CircularProgressIndicator();
+                                  else if (snapshot.data == null ||
+                                      snapshot.data.length == 0) {
+                                    return Center(
+                                      child: Text('No Orders yet!'),
+                                    );
+                                  } else
+                                    return ListView.builder(
+                                      itemCount: snapshot.data.length,
+                                      itemBuilder:
+                                          (BuildContext context, int index) {
+                                        return ListTile(
+                                          title: Text(
+                                              snapshot.data[index].itemName),
+                                          trailing: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.end,
+                                                // mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Text(
+                                                    'Quantity : ',
+                                                    textAlign: TextAlign.right,
+                                                  ),
+                                                  Text('Cost : ',
+                                                      textAlign:
+                                                          TextAlign.right),
+                                                  Text('Total : ',
+                                                      textAlign:
+                                                          TextAlign.right),
+                                                ],
+                                              ),
+                                              Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                // mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Text(snapshot
+                                                      .data[index].quantity
+                                                      .toString()),
+                                                  Text(snapshot.data[index].cost
+                                                      .toString()),
+                                                  Text(snapshot
+                                                      .data[index].totalCost
+                                                      .toString()),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      },
+                                    );
+                                },
+                              ),
+                            ),
+                    ),
+                  ),
+                  Expanded(
+                    flex: 2,
+                    child: Container(
+                      color: Colors.deepPurple,
+                      height: MediaQuery.of(context).size.height * 0.25,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              RaisedButton(
+                                onPressed: () =>
+                                    addOrder(snapshot.data.eventId),
+                                color: Colors.deepOrange,
+                                child: Text('Add Order'),
+                              ),
+                              RaisedButton(
+                                onPressed: null,
+                              ),
+                            ],
+                          ),
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              RaisedButton(
+                                onPressed: () {},
+                                color: Colors.deepOrange,
+                                child: Text('Pay'),
+                              ),
+                              RaisedButton(onPressed: null),
+                            ],
+                          )
+                        ],
                       ),
                     ),
-            ),
-          ),
-          Expanded(
-            flex: 2,
-            child: Container(
-              color: Colors.deepPurple,
-              height: MediaQuery.of(context).size.height * 0.25,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      RaisedButton(
-                        onPressed: () => addOrder(),
-                        color: Colors.deepOrange,
-                        child: Text('Add Order'),
-                      ),
-                      RaisedButton(
-                        onPressed: null,
-                      ),
-                    ],
                   ),
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      RaisedButton(
-                        onPressed: () {},
-                        color: Colors.deepOrange,
-                        child: Text('Pay'),
-                      ),
-                      RaisedButton(onPressed: null),
-                    ],
-                  )
                 ],
               ),
-            ),
-          ),
-        ],
-      ),
+            );
+          }
+        }
+      },
     );
   }
 
 // TODO make a separate page with better UI this dialog is ****
-  void addOrder() async {
+  Future addOrder(String eventId) async {
     String order;
     final _formkey = GlobalKey<FormState>();
     showDialog(
@@ -202,7 +289,7 @@ class _EventHomeState extends State<EventHome> {
                             onPressed: () {
                               if (_formkey.currentState.validate()) {
                                 // TODO add order model!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                                postOrder(order);
+                                postOrder(order, eventId);
                               }
                               // if (_formKey.currentState.validate()) {
                               //   // DatabaseService().addEvent(widget.group.groupId);
@@ -227,9 +314,8 @@ class _EventHomeState extends State<EventHome> {
   }
 
 // TODO add other quantities as parameters too!
-  void postOrder(String order) async {
-    Response response =
-        await EventApiService.create().addOrder(_event.eventId, {
+  Future postOrder(String order, String eventId) async {
+    Response response = await EventApiService.create().addOrder(eventId, {
       'orderId': Uuid().v1(),
       'eventId': _event.eventId,
       'phoneNumber': _phoneNumber,
