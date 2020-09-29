@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ttmm/models/event.dart';
 import 'package:ttmm/models/order.dart';
 import 'package:ttmm/screens/event/order_item.dart';
+import 'package:ttmm/screens/event/orders_list.dart';
 import 'package:ttmm/services/event_api_service.dart';
 import 'package:ttmm/shared/constants.dart';
 import 'package:ttmm/shared/loading.dart';
@@ -22,7 +23,10 @@ class EventHome extends StatefulWidget {
 class _EventHomeState extends State<EventHome> {
   int _quantity = 0;
   int _cost = 0;
-  final _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  final _scaffoldKey = new GlobalKey<ScaffoldState>();
+  final GlobalKey<OrderListState> _orderListKey =
+      new GlobalKey<OrderListState>();
 
   String _phoneNumber;
   Future _future;
@@ -36,7 +40,15 @@ class _EventHomeState extends State<EventHome> {
     Response response = await EventApiService.create()
         .getEvent("8c6a84f0-0173-11eb-b751-cf68f76509dc");
     if (response.statusCode == 200) {
-      if (response.body != null) return Event.fromJson(response.body);
+      if (response.body != null) {
+        Event event = Event.fromJson(response.body);
+        if (event.eventId != _event.eventId ||
+            event.orders.length != _event.orders.length)
+          setState(() {
+            _event = event;
+          });
+        return event;
+      }
     }
 
     return null;
@@ -47,31 +59,13 @@ class _EventHomeState extends State<EventHome> {
     _phoneNumber = preferences.getString(currentPhoneNUmber);
   }
 
-  Future getOrders() async {
-    Response response =
-        await EventApiService.create().getOrders(_event.eventId);
-
-    List<Order> orders = new List<Order>();
-    if (response.statusCode == 200) {
-      if (response.body != null) {
-        for (dynamic item in response.body) {
-          Order order = Order.fromJson(item);
-          orders.add(order);
-        }
-        return orders;
-      } else
-        return null;
-    } else
-      print('ERROR');
-  }
-
   @override
   void initState() {
     if (widget.event == null) {
       _future = _getEvent("8c6a84f0-0173-11eb-b751-cf68f76509dc");
     }
     getPhoneNumber();
-    _orders = getOrders();
+    // _orders = getOrders();
     super.initState();
   }
 
@@ -81,7 +75,7 @@ class _EventHomeState extends State<EventHome> {
   Widget build(BuildContext context) {
     return FutureBuilder(
       // TODO  future: _getEvent(widget.event.eventId),
-      future: _future,
+      future: _getEvent("8c6a84f0-0173-11eb-b751-cf68f76509dc"),
       builder: (BuildContext context, AsyncSnapshot snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting)
           return Loading();
@@ -99,37 +93,16 @@ class _EventHomeState extends State<EventHome> {
                   Expanded(
                     flex: 5,
                     child: Container(
-                      height: MediaQuery.of(context).size.width * 0.75,
-                      child: snapshot.data.orders == null ||
-                              snapshot.data.orders.length == 0
-                          ? Center(
-                              child: Text('No orders yet'),
-                            )
-                          : FutureBuilder(
-                              future: _orders,
-                              builder: (BuildContext context,
-                                  AsyncSnapshot snapshot) {
-                                if (snapshot.connectionState ==
-                                    ConnectionState.waiting)
-                                  return CircularProgressIndicator();
-                                else if (snapshot.data == null ||
-                                    snapshot.data.length == 0) {
-                                  return Center(
-                                    child: Text('No Orders yet!'),
-                                  );
-                                } else
-                                  return ListView.builder(
-                                    shrinkWrap: true,
-                                    itemCount: snapshot.data.length,
-                                    itemBuilder:
-                                        (BuildContext context, int index) {
-                                      return OrderItem(
-                                          order: snapshot.data[index]);
-                                    },
-                                  );
-                              },
-                            ),
-                    ),
+                        height: MediaQuery.of(context).size.width * 0.75,
+                        child: snapshot.data.orders == null ||
+                                snapshot.data.orders.length == 0
+                            ? Center(
+                                child: Text('No orders yet'),
+                              )
+                            // TODO extract this future builder to another widget.....orders list like group list probably!
+                            : OrderList(
+                                eventId: snapshot.data.eventId,
+                                key: _orderListKey)),
                   ),
                   Expanded(
                     flex: 2,
@@ -277,15 +250,19 @@ class _EventHomeState extends State<EventHome> {
       'cost': _cost,
       'totalCost': _quantity * _cost
     });
+    Navigator.of(context).pop();
 
     if (response.statusCode == 200) {
       print('SUCCESS');
+      Map<String, dynamic> map = response.body;
+      Order order = Order.fromJson(map['order']);
+
+      _orderListKey.currentState.refreshList(order);
       showSnackbar(_scaffoldKey, 'SUCCESS');
     } else {
       showSnackbar(_scaffoldKey, 'ERROR');
     }
     print(response.body);
-    Navigator.of(context).pop();
   }
 }
 

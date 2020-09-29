@@ -25,12 +25,16 @@ abstract class EventApiService extends ChopperService {
   Future<Response> getOrders(
       @Path('eventId') String eventId);
 
+
+  // @Delete(path: '/deleteOrder')
+  // Future<Response> deleteOrder(@Query('orderId') String orderId);
+
   static EventApiService create() {
     final client = ChopperClient(
         baseUrl: 'https://ttmm-pp.herokuapp.com/api',
         services: [_$EventApiService()],
         converter: JsonConverter(),
-        // interceptors: [HttpLoggingInterceptor()]
+        interceptors: [HttpLoggingInterceptor()]
         );
     return _$EventApiService(client);
   }
