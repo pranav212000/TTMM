@@ -24,7 +24,7 @@ class _GroupHomeState extends State<GroupHome> {
   final _formKey = GlobalKey<FormState>();
   bool _loading = false;
   String _eventName = '';
-// TODO
+
   Future getEvents() async {
     Response response = await EventApiService.create()
         .getEvents({'eventIds': widget.group.groupEvents});

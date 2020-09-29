@@ -86,7 +86,6 @@ class _HomeState extends State<Home> {
 
   @override
   void initState() {
-    // TODO: implement initState
     _future = _getUserData();
     super.initState();
   }

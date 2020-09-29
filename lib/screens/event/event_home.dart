@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ttmm/models/event.dart';
 import 'package:ttmm/models/order.dart';
+import 'package:ttmm/screens/event/order_item.dart';
 import 'package:ttmm/services/event_api_service.dart';
 import 'package:ttmm/shared/constants.dart';
 import 'package:ttmm/shared/loading.dart';
@@ -75,6 +76,7 @@ class _EventHomeState extends State<EventHome> {
   }
 
 // TODO refresh the list of orders!!!
+// FIXME this is a must -^
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
@@ -103,69 +105,29 @@ class _EventHomeState extends State<EventHome> {
                           ? Center(
                               child: Text('No orders yet'),
                             )
-                          : Card(
-                              child: FutureBuilder(
-                                future: _orders,
-                                builder: (BuildContext context,
-                                    AsyncSnapshot snapshot) {
-                                  if (snapshot.connectionState ==
-                                      ConnectionState.waiting)
-                                    return CircularProgressIndicator();
-                                  else if (snapshot.data == null ||
-                                      snapshot.data.length == 0) {
-                                    return Center(
-                                      child: Text('No Orders yet!'),
-                                    );
-                                  } else
-                                    return ListView.builder(
-                                      itemCount: snapshot.data.length,
-                                      itemBuilder:
-                                          (BuildContext context, int index) {
-                                        return ListTile(
-                                          title: Text(
-                                              snapshot.data[index].itemName),
-                                          trailing: Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.end,
-                                                // mainAxisSize: MainAxisSize.min,
-                                                children: [
-                                                  Text(
-                                                    'Quantity : ',
-                                                    textAlign: TextAlign.right,
-                                                  ),
-                                                  Text('Cost : ',
-                                                      textAlign:
-                                                          TextAlign.right),
-                                                  Text('Total : ',
-                                                      textAlign:
-                                                          TextAlign.right),
-                                                ],
-                                              ),
-                                              Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                // mainAxisSize: MainAxisSize.min,
-                                                children: [
-                                                  Text(snapshot
-                                                      .data[index].quantity
-                                                      .toString()),
-                                                  Text(snapshot.data[index].cost
-                                                      .toString()),
-                                                  Text(snapshot
-                                                      .data[index].totalCost
-                                                      .toString()),
-                                                ],
-                                              ),
-                                            ],
-                                          ),
-                                        );
-                                      },
-                                    );
-                                },
-                              ),
+                          : FutureBuilder(
+                              future: _orders,
+                              builder: (BuildContext context,
+                                  AsyncSnapshot snapshot) {
+                                if (snapshot.connectionState ==
+                                    ConnectionState.waiting)
+                                  return CircularProgressIndicator();
+                                else if (snapshot.data == null ||
+                                    snapshot.data.length == 0) {
+                                  return Center(
+                                    child: Text('No Orders yet!'),
+                                  );
+                                } else
+                                  return ListView.builder(
+                                    shrinkWrap: true,
+                                    itemCount: snapshot.data.length,
+                                    itemBuilder:
+                                        (BuildContext context, int index) {
+                                      return OrderItem(
+                                          order: snapshot.data[index]);
+                                    },
+                                  );
+                              },
                             ),
                     ),
                   ),
@@ -288,17 +250,8 @@ class _EventHomeState extends State<EventHome> {
                             color: Colors.blue,
                             onPressed: () {
                               if (_formkey.currentState.validate()) {
-                                // TODO add order model!!!!!!!!!!!!!!!!!!!!!!!!!!!
                                 postOrder(order, eventId);
                               }
-                              // if (_formKey.currentState.validate()) {
-                              //   // DatabaseService().addEvent(widget.group.groupId);
-                              //   String eventId = Uuid().v1();
-                              //   Event event = new Event(
-                              //       eventId: eventId, eventName: _eventName);
-
-                              //   addEvent(event);
-                              // }
                             },
                             child: Text('Create'),
                           )
@@ -344,7 +297,4 @@ class _EventHomeState extends State<EventHome> {
   who paid,
   Who paid how much,
   How much do I owe to whom
-
-
-
 */

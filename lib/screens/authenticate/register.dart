@@ -160,7 +160,6 @@ class _RegisterState extends State<Register> {
 
                       //Here you can get the download URL when the task has been completed.
                       print("Download URL " + url.toString());
-                      // TODO add the api post!!!
 
                       UserData userData = new UserData(
                           uid: widget.user.uid,
