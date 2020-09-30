@@ -22,6 +22,8 @@ class OrderListState extends State<OrderList> {
   List<Order> _orders = new List<Order>();
   Future _future;
 
+  final GlobalKey<AnimatedListState> listKey = GlobalKey<AnimatedListState>();
+
   Future getOrders() async {
     Response response =
         await EventApiService.create().getOrders(widget.eventId);
@@ -59,58 +61,14 @@ class OrderListState extends State<OrderList> {
           );
         } else {
           if (_orders.length != snapshot.data.length) _orders = snapshot.data;
-          return ListView.builder(
+          // return ListView.builder(
+          return AnimatedList(
+            key: listKey,
             shrinkWrap: true,
-            itemCount: _orders.length,
-            itemBuilder: (BuildContext context, int index) {
-              return Slidable(
-                actionPane: SlidableDrawerActionPane(),
-                child: OrderItem(order: _orders[index]),
-                actions: [
-                  IconSlideAction(
-                      caption: 'Delete',
-                      color: Colors.red,
-                      icon: Icons.delete,
-                      onTap: () {
-                        
-                        showDialog(
-                          context: context,
-                          builder: (context) {
-                            return AlertDialog(
-                              title: Text('Confirm'),
-                              content: Text(
-                                  'Are you sure you want to delete ${_orders[index].itemName}'),
-                              actions: [
-                                FlatButton(
-                                    onPressed: () {
-                                      deleteOrder(_orders[index].orderId);
-                                      setState(() {});
-                                    },
-                                    child: Text('Yes')),
-                                FlatButton(
-                                    onPressed: () {
-                                      setState(() {
-                                        Navigator.of(context).pop();
-                                      });
-                                    },
-                                    child: Text('No'))
-                              ],
-                            );
-                          },
-                        );
-                      }),
-                ],
-                secondaryActions: [
-                  IconSlideAction(
-                    caption: 'Edit',
-                    color: Colors.amber,
-                    icon: Icons.edit,
-                    onTap: () => Scaffold.of(context).showSnackBar(SnackBar(
-                      content: Text('EDIT'),
-                    )),
-                  )
-                ],
-              );
+            initialItemCount: _orders.length,
+            itemBuilder:
+                (BuildContext context, int index, Animation animation) {
+              return _buildItem(_orders[index], animation);
             },
           );
         }
@@ -131,6 +89,9 @@ class OrderListState extends State<OrderList> {
     if (map['isSuccess']) {
       Navigator.of(context).pop();
       setState(() {
+        int index = _orders.indexWhere((order) => order.orderId == orderId);
+        listKey.currentState.removeItem(index,
+            (context, animation) => _buildItem(_orders[index], animation));
         _orders.removeWhere((order) => order.orderId == orderId);
         Scaffold.of(context)
             .showSnackBar(SnackBar(content: Text('Order deleted')));
@@ -140,5 +101,61 @@ class OrderListState extends State<OrderList> {
       Scaffold.of(context)
           .showSnackBar(SnackBar(content: Text('Could not delete order')));
     }
+  }
+
+  Widget _buildItem(Order order, Animation animation) {
+    return SlideTransition(
+      position: animation.drive(Tween<Offset>(
+        begin: const Offset(1, 0),
+        end: Offset(0, 0),
+      )),
+      child: Slidable(
+        actionPane: SlidableDrawerActionPane(),
+        child: OrderItem(order: order),
+        actions: [
+          IconSlideAction(
+              caption: 'Delete',
+              color: Colors.red,
+              icon: Icons.delete,
+              onTap: () {
+                showDialog(
+                  context: context,
+                  builder: (context) {
+                    return AlertDialog(
+                      title: Text('Confirm'),
+                      content: Text(
+                          'Are you sure you want to delete ${order.itemName}'),
+                      actions: [
+                        FlatButton(
+                            onPressed: () {
+                              deleteOrder(order.orderId);
+                              setState(() {});
+                            },
+                            child: Text('Yes')),
+                        FlatButton(
+                            onPressed: () {
+                              setState(() {
+                                Navigator.of(context).pop();
+                              });
+                            },
+                            child: Text('No'))
+                      ],
+                    );
+                  },
+                );
+              }),
+        ],
+        secondaryActions: [
+          IconSlideAction(
+            caption: 'Edit',
+            color: Colors.amber,
+            icon: Icons.edit,
+            onTap: () => Scaffold.of(context).showSnackBar(SnackBar(
+              content: Text('EDIT'),
+            )),
+          )
+        ],
+      ),
+    );
   }
 }
