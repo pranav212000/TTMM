@@ -4,6 +4,8 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:ttmm/models/order.dart';
 import 'package:ttmm/services/event_api_service.dart';
 import 'package:ttmm/services/order_api_service.dart';
+import 'package:ttmm/shared/constants.dart';
+import 'package:validators/validators.dart';
 
 import 'order_item.dart';
 
@@ -23,6 +25,7 @@ class OrderListState extends State<OrderList> {
   Future _future;
 
   final GlobalKey<AnimatedListState> listKey = GlobalKey<AnimatedListState>();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   Future getOrders() async {
     Response response =
@@ -82,27 +85,6 @@ class OrderListState extends State<OrderList> {
     });
   }
 
-  Future deleteOrder(String orderId) async {
-    Response response = await OrderApiService.create().deleteOrder(orderId);
-    Map<String, dynamic> map = response.body;
-
-    if (map['isSuccess']) {
-      Navigator.of(context).pop();
-      setState(() {
-        int index = _orders.indexWhere((order) => order.orderId == orderId);
-        listKey.currentState.removeItem(index,
-            (context, animation) => _buildItem(_orders[index], animation));
-        _orders.removeWhere((order) => order.orderId == orderId);
-        Scaffold.of(context)
-            .showSnackBar(SnackBar(content: Text('Order deleted')));
-      });
-    } else {
-      Navigator.of(context).pop();
-      Scaffold.of(context)
-          .showSnackBar(SnackBar(content: Text('Could not delete order')));
-    }
-  }
-
   Widget _buildItem(Order order, Animation animation) {
     return SlideTransition(
       position: animation.drive(Tween<Offset>(
@@ -150,12 +132,153 @@ class OrderListState extends State<OrderList> {
             caption: 'Edit',
             color: Colors.amber,
             icon: Icons.edit,
-            onTap: () => Scaffold.of(context).showSnackBar(SnackBar(
-              content: Text('EDIT'),
-            )),
-          )
+            onTap: () =>
+                updateOrder(order, order.itemName, order.quantity, order.cost),
+          ),
         ],
       ),
     );
+  }
+
+  void updateOrder(Order order, String item, int quantity, int cost) {
+    showDialog(
+        context: context,
+        builder: (_) {
+          return StatefulBuilder(
+            builder: (BuildContext context, setState) {
+              return AlertDialog(
+                title: Text('Enter order'),
+                content: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Form(
+                        key: _formKey,
+                        child: Column(
+                          children: [
+                            TextFormField(
+                              initialValue: item,
+                              decoration: textInputDecoration.copyWith(
+                                  labelText: 'Order'),
+                              validator: (val) =>
+                                  val.isEmpty ? 'Enter order name' : null,
+                              onChanged: (val) => item = val,
+                            ),
+                            SizedBox(
+                              height: 10.0,
+                            ),
+                            TextFormField(
+                              initialValue: quantity.toString(),
+                              decoration: textInputDecoration.copyWith(
+                                  labelText: 'Quantity'),
+                              validator: (val) => val.isEmpty
+                                  ? 'Enter quantity'
+                                  : (!isNumeric(val) ? 'Enter a number' : null),
+                              onChanged: (val) {
+                                if (isNumeric(val))
+                                  setState(() {
+                                    quantity = int.parse(val);
+                                  });
+                              },
+                            ),
+                            SizedBox(
+                              height: 10.0,
+                            ),
+                            TextFormField(
+                              initialValue: cost.toString(),
+                              decoration: textInputDecoration.copyWith(
+                                  labelText: 'Cost'),
+                              validator: (val) => val.isEmpty
+                                  ? 'Enter cost'
+                                  : !isNumeric(val) ? 'Enter a number' : null,
+                              onChanged: (val) {
+                                if (isNumeric(val))
+                                  setState(() {
+                                    cost = int.parse(val);
+                                  });
+                              },
+                            ),
+                            SizedBox(
+                              height: 10.0,
+                            ),
+                            Visibility(
+                                visible:
+                                    quantity == 0 || cost == 0 ? false : true,
+                                child: Text('Total Cost = ${quantity * cost}')),
+                            SizedBox(
+                              height: 10.0,
+                            ),
+                            RaisedButton(
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10.0)),
+                              color: Colors.blue,
+                              onPressed: () {
+                                if (_formKey.currentState.validate()) {
+                                  postUpdate(order, item, quantity, cost);
+                                }
+                              },
+                              child: Text('Update'),
+                            )
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          );
+        });
+  }
+
+  Future postUpdate(Order order, String item, int quantity, int cost) async {
+    String orderId = order.orderId;
+    order.itemName = item;
+    order.quantity = quantity;
+    order.cost = cost;
+    order.totalCost = cost * quantity;
+    if (order.updatedAt == null || order.createdAt == null) {
+      order.createdAt = DateTime.now();
+      order.updatedAt = DateTime.now();
+    }
+
+    Response response =
+        await OrderApiService.create().updateOrder(orderId, order.toJson());
+    Navigator.of(context).pop();
+
+    if (response.statusCode == 200) {
+      if (response.body != null) {
+        order = Order.fromJson(response.body);
+        setState(() {
+          _orders[_orders.indexWhere(
+              (listorder) => listorder.orderId == order.orderId)] = order;
+          Scaffold.of(context)
+              .showSnackBar(SnackBar(content: Text('Order updated')));
+        });
+      }
+    } else {
+      Scaffold.of(context)
+          .showSnackBar(SnackBar(content: Text('Could not update Order')));
+    }
+  }
+
+  Future deleteOrder(String orderId) async {
+    Response response = await OrderApiService.create().deleteOrder(orderId);
+    Map<String, dynamic> map = response.body;
+
+    if (map['isSuccess']) {
+      Navigator.of(context).pop();
+      setState(() {
+        int index = _orders.indexWhere((order) => order.orderId == orderId);
+        listKey.currentState.removeItem(index,
+            (context, animation) => _buildItem(_orders[index], animation));
+        _orders.removeWhere((order) => order.orderId == orderId);
+        Scaffold.of(context)
+            .showSnackBar(SnackBar(content: Text('Order deleted')));
+      });
+    } else {
+      Scaffold.of(context)
+          .showSnackBar(SnackBar(content: Text('Could not delete order')));
+    }
   }
 }

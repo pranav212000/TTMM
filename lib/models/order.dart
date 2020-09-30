@@ -12,6 +12,8 @@ class Order {
   int quantity;
   int cost;
   int totalCost;
+  DateTime createdAt;
+  DateTime updatedAt;
 
   Order(
       {@required this.orderId,
@@ -20,7 +22,9 @@ class Order {
       @required this.itemName,
       @required this.quantity,
       @required this.cost,
-      @required this.totalCost});
+      @required this.totalCost,
+      this.createdAt,
+      this.updatedAt});
 
   factory Order.fromJson(Map<String, dynamic> json) => _$OrderFromJson(json);
 
