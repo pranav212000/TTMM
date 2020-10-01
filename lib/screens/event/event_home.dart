@@ -6,6 +6,7 @@ import 'package:ttmm/models/order.dart';
 import 'package:ttmm/screens/event/order_item.dart';
 import 'package:ttmm/screens/event/orders_list.dart';
 import 'package:ttmm/services/event_api_service.dart';
+import 'package:qrscan/qrscan.dart' as scanner;
 import 'package:ttmm/shared/constants.dart';
 import 'package:ttmm/shared/loading.dart';
 import 'package:uuid/uuid.dart';
@@ -130,11 +131,34 @@ class _EventHomeState extends State<EventHome> {
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
                               RaisedButton(
-                                onPressed: () {},
+                                onPressed: () async {
+                                  String scanResult = await scanner.scan();
+                                  print(scanResult);
+                                  String temp =
+                                      "upi://pay?pa=pranavpatil212000@oksbi&pn=Pranav%20Patil&aid=uGICAgIDJjPLAGw";
+                                  var decoded = Uri.decodeFull(temp);
+                                  print(decoded);
+                                },
                                 color: Colors.deepOrange,
                                 child: Text('Pay'),
                               ),
-                              RaisedButton(onPressed: null),
+                              RaisedButton(
+                                onPressed: () {
+                                  String temp =
+                                      "upi://pay?pa=pranavpatil212000@oksbi&pn=Pranav%20Patil&aid=uGICAgIDJjPLAGw";
+                                  var decoded = Uri.decodeComponent(temp);
+
+                                  Uri uri = Uri.dataFromString(temp);
+                                  Map<String, dynamic> params =
+                                      uri.queryParameters;
+                                  var uid = params['pa'];
+                                  var name = params['pn'];
+                                  print(uid);
+                                  print(Uri.decodeComponent(name));
+                                  print(decoded);
+                                },
+                                child: Text('DECODE'),
+                              ),
                             ],
                           )
                         ],

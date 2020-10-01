@@ -23,6 +23,7 @@ class OrderList extends StatefulWidget {
 class OrderListState extends State<OrderList> {
   List<Order> _orders = new List<Order>();
   Future _future;
+  final SlidableController slidableController = SlidableController();
 
   final GlobalKey<AnimatedListState> listKey = GlobalKey<AnimatedListState>();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
@@ -92,6 +93,8 @@ class OrderListState extends State<OrderList> {
         end: Offset(0, 0),
       )),
       child: Slidable(
+        key: Key(order.itemName),
+        controller: slidableController,
         actionPane: SlidableDrawerActionPane(),
         child: OrderItem(order: order),
         actions: [
@@ -272,7 +275,6 @@ class OrderListState extends State<OrderList> {
         int index = _orders.indexWhere((order) => order.orderId == orderId);
         listKey.currentState.removeItem(index,
             (context, animation) => _buildItem(_orders[index], animation));
-        _orders.removeWhere((order) => order.orderId == orderId);
         Scaffold.of(context)
             .showSnackBar(SnackBar(content: Text('Order deleted')));
       });
