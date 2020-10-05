@@ -16,6 +16,8 @@ abstract class GroupApiService extends ChopperService {
   @Get(path: '/multiple')
   Future<Response> getGroups(@Body() Map<String, dynamic> body);
 
+  @Get(path: '/{orderId}/events')
+  Future<Response> getEvents(@Path('orderId') String orderId);
 
   static GroupApiService create() {
     final client = ChopperClient(

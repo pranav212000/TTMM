@@ -76,7 +76,9 @@ class _EventHomeState extends State<EventHome> {
   Widget build(BuildContext context) {
     return FutureBuilder(
       // TODO  future: _getEvent(widget.event.eventId),
-      future: _getEvent("8c6a84f0-0173-11eb-b751-cf68f76509dc"),
+      // TODO remove the hardcoded event ID finally
+      // FIXME
+      future: _getEvent( widget.event != null ? widget.event.eventId : "8c6a84f0-0173-11eb-b751-cf68f76509dc"),
       builder: (BuildContext context, AsyncSnapshot snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting)
           return Loading();
@@ -140,7 +142,7 @@ class _EventHomeState extends State<EventHome> {
                                   print(decoded);
                                 },
                                 color: Colors.deepOrange,
-                                child: Text('Pay'),
+                                child: Text('I\'m paying'),
                               ),
                               RaisedButton(
                                 onPressed: () {

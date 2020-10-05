@@ -34,4 +34,10 @@ class _$GroupApiService extends GroupApiService {
     final $request = Request('GET', $url, client.baseUrl, body: $body);
     return client.send<dynamic, dynamic>($request);
   }
+
+  Future<Response> getEvents(String orderId) {
+    final $url = '/group/${orderId}/events';
+    final $request = Request('GET', $url, client.baseUrl);
+    return client.send<dynamic, dynamic>($request);
+  }
 }

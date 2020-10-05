@@ -14,9 +14,10 @@ class _$EventApiService extends EventApiService {
 
   final definitionType = EventApiService;
 
-  Future<Response> addEvent(String groupId, Map<String, dynamic> body) {
+  Future<Response> addEvent(
+      String groupId, String split, Map<String, dynamic> body) {
     final $url = '/event/addEvent';
-    final Map<String, dynamic> $params = {'groupId': groupId};
+    final Map<String, dynamic> $params = {'groupId': groupId, 'split': split};
     final $body = body;
     final $request =
         Request('POST', $url, client.baseUrl, body: $body, parameters: $params);

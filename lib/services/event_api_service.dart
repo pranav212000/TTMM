@@ -8,8 +8,8 @@ abstract class EventApiService extends ChopperService {
   // Future<Response> getUser(@Path('uid') String uid);
 
   @Post(path: '/addEvent')
-  Future<Response> addEvent(
-      @Query('groupId') String groupId, @Body() Map<String, dynamic> body);
+  Future<Response> addEvent(@Query('groupId') String groupId,
+      @Query('split') String split, @Body() Map<String, dynamic> body);
 
   @Get(path: '/')
   Future<Response> getEvent(@Query('eventId') String eventId);
@@ -22,9 +22,7 @@ abstract class EventApiService extends ChopperService {
       @Path('eventId') String eventId, @Body() Map<String, dynamic> body);
 
   @Get(path: '/{eventId}/orders')
-  Future<Response> getOrders(
-      @Path('eventId') String eventId);
-
+  Future<Response> getOrders(@Path('eventId') String eventId);
 
   // @Delete(path: '/deleteOrder')
   // Future<Response> deleteOrder(@Query('orderId') String orderId);
@@ -34,8 +32,7 @@ abstract class EventApiService extends ChopperService {
         baseUrl: 'https://ttmm-pp.herokuapp.com/api',
         services: [_$EventApiService()],
         converter: JsonConverter(),
-        interceptors: [HttpLoggingInterceptor()]
-        );
+        interceptors: [HttpLoggingInterceptor()]);
     return _$EventApiService(client);
   }
 

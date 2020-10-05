@@ -15,7 +15,7 @@ class Event {
   Event(
       {@required this.eventId,
       @required this.eventName,
-      this.transactionId,
+      @required this.transactionId,
       this.orders = const [],
       this.createdAt,
       this.updatedAt});

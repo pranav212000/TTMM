@@ -25,3 +25,6 @@ const groupIconUrl = 'groupIconUrl';
 const groupMembers = 'members';
 const updateTime = 'updateTime';
 const createdTime = 'createdTime';
+const split = 'split';
+const String evenly = 'evenly';
+const String byOrder = 'byOrder';
