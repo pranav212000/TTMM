@@ -54,15 +54,15 @@ class Wrapper extends StatelessWidget {
 
     if (user == null)
       return SignIn();
+    // else {
+    //   setSharedPreferences(user);
+    //   return Home();
+    // }
+// TODO fix this jugad!
     else {
       setSharedPreferences(user);
-      return Home();
+      return EventHome();
     }
-// // TODO fix this jugad!
-//     else {
-
-//       return EventHome();
-//     }
   }
 
   void setSharedPreferences(firebaseAuth.User user) async {

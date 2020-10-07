@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ttmm/models/event.dart';
 import 'package:ttmm/models/order.dart';
+import 'package:ttmm/screens/event/bill_payment.dart';
 import 'package:ttmm/screens/event/order_item.dart';
 import 'package:ttmm/screens/event/orders_list.dart';
 import 'package:ttmm/services/event_api_service.dart';
@@ -34,24 +35,24 @@ class _EventHomeState extends State<EventHome> {
   Future _orders;
 
   // TODO clear this shit jugad
-  Event _event = new Event(
-      eventId: "8c6a84f0-0173-11eb-b751-cf68f76509dc",
-      eventName: "EVENT LOADING");
+  Event _event;
+  // Event _event = new Event(
+  //     eventId: "8c6a84f0-0173-11eb-b751-cf68f76509dc",
+  //     eventName: "EVENT LOADING", transactionId: null);
   Future<Event> _getEvent(String eventId) async {
-    Response response = await EventApiService.create()
-        .getEvent("8c6a84f0-0173-11eb-b751-cf68f76509dc");
+    Response response = await EventApiService.create().getEvent(eventId);
     if (response.statusCode == 200) {
       if (response.body != null) {
         Event event = Event.fromJson(response.body);
-        if (event.eventId != _event.eventId ||
-            event.orders.length != _event.orders.length)
+        // if (event.eventId != _event.eventId ||
+        //     event.orders.length != _event.orders.length)
+        if (_event == null)
           setState(() {
             _event = event;
           });
         return event;
       }
     }
-
     return null;
   }
 
@@ -63,7 +64,7 @@ class _EventHomeState extends State<EventHome> {
   @override
   void initState() {
     if (widget.event == null) {
-      _future = _getEvent("8c6a84f0-0173-11eb-b751-cf68f76509dc");
+      _future = _getEvent("040a68d0-07dd-11eb-b854-b701c410207c");
     }
     getPhoneNumber();
     // _orders = getOrders();
@@ -74,11 +75,16 @@ class _EventHomeState extends State<EventHome> {
 // FIXME this is a must -^
   @override
   Widget build(BuildContext context) {
+    print('WIDGET EVENT');
+    print(widget.event);
+
     return FutureBuilder(
       // TODO  future: _getEvent(widget.event.eventId),
       // TODO remove the hardcoded event ID finally
       // FIXME
-      future: _getEvent( widget.event != null ? widget.event.eventId : "8c6a84f0-0173-11eb-b751-cf68f76509dc"),
+      future: _getEvent(widget.event != null
+          ? widget.event.eventId
+          : "040a68d0-07dd-11eb-b854-b701c410207c"),
       builder: (BuildContext context, AsyncSnapshot snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting)
           return Loading();
@@ -134,12 +140,28 @@ class _EventHomeState extends State<EventHome> {
                             children: [
                               RaisedButton(
                                 onPressed: () async {
-                                  String scanResult = await scanner.scan();
-                                  print(scanResult);
-                                  String temp =
-                                      "upi://pay?pa=pranavpatil212000@oksbi&pn=Pranav%20Patil&aid=uGICAgIDJjPLAGw";
-                                  var decoded = Uri.decodeFull(temp);
-                                  print(decoded);
+                                  Navigator.of(context)
+                                      .push(MaterialPageRoute(
+                                          builder: (_) => BillPayment(
+                                              eventId: _event.eventId)))
+                                      .then((result) {
+                                    if (result) {
+                                      showSnackbar(
+                                          _scaffoldKey, 'Payment successful');
+                                    } else {
+                                      showSnackbar(
+                                          _scaffoldKey, 'Payment unsuccessful',
+                                          color: Colors.red);
+                                    }
+                                  });
+
+                                  // TODO get data the code from here
+                                  // String scanResult = await scanner.scan();
+                                  // print(scanResult);
+                                  // String temp =
+                                  //     "upi://pay?pa=pranavpatil212000@oksbi&pn=Pranav%20Patil&aid=uGICAgIDJjPLAGw";
+                                  // var decoded = Uri.decodeFull(temp);
+                                  // print(decoded);
                                 },
                                 color: Colors.deepOrange,
                                 child: Text('I\'m paying'),

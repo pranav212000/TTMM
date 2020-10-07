@@ -4,6 +4,8 @@ import 'package:ttmm/models/event.dart';
 import 'package:ttmm/screens/event/event_home.dart';
 import 'package:ttmm/services/event_api_service.dart';
 import 'package:ttmm/services/group_api_service.dart';
+import 'package:ttmm/shared/constants.dart';
+import 'package:intl/intl.dart';
 
 class EventList extends StatefulWidget {
   final String groupId;
@@ -15,7 +17,9 @@ class EventList extends StatefulWidget {
 
 class EventListState extends State<EventList> {
   List<Event> _events = new List<Event>();
-  Future _future;
+  final GlobalKey<AnimatedListState> listKey = GlobalKey<AnimatedListState>();
+
+  Future _future = null;
 
   Future getEvents() async {
     Response response =
@@ -27,28 +31,22 @@ class EventListState extends State<EventList> {
           Event event = Event.fromJson(item);
           if (_events.indexOf(event) == -1) _events.add(event);
         }
+
+        _events.sort((a, b) => a.updatedAt.compareTo(b.updatedAt));
+
         return _events;
       } else
         return null;
     } else {
       print('ERROR');
     }
-
-    // List<Event> events = new List<Event>();
-    // if (response.statusCode == 200) {
-    //   for (dynamic event in response.body) {
-    //     events.add(Event.fromJson(event));
-    //   }
-    //   return events;
-    // }
   }
 
   @override
-  void initState() { 
+  void initState() {
     _future = getEvents();
-    super.initState();    
+    super.initState();
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -60,18 +58,25 @@ class EventListState extends State<EventList> {
             child: CircularProgressIndicator(),
           );
         } else {
-          if (snapshot.data == null) {
-          } else if (snapshot.data.length == 0) {
+          if (snapshot.data == null || snapshot.data.length == 0) {
             return Center(child: Text('No events yet!'));
           } else {
+            // TODO add is delete in following if while deleting event
+
+            if (_events.length <= snapshot.data.length) {
+              _events = snapshot.data;
+            }
+            _events.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+
             return ListView.builder(
-              itemCount: snapshot.data.length,
+              itemCount: _events.length,
               itemBuilder: (BuildContext context, int index) {
-                Event event = snapshot.data.elementAt(index);
+                Event event = _events.elementAt(index);
+                String lastActivity = formatDate(event.updatedAt);
                 return Card(
                   child: ListTile(
                     title: Text(event.eventName),
-                    subtitle: Text("Last activity : ${event.updatedAt}"),
+                    subtitle: Text("Last activity : $lastActivity"),
                     onTap: () => Navigator.of(context).push(MaterialPageRoute(
                         builder: (_) => EventHome(
                               event: event,
@@ -86,7 +91,7 @@ class EventListState extends State<EventList> {
     );
   }
 
-  void refreshList(Event event) {
+  void refreshList(Event event) async {
     setState(() {
       _events.add(event);
     });

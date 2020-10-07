@@ -129,7 +129,7 @@ class _GroupHomeState extends State<GroupHome> {
                                     String eventId = Uuid().v1();
                                     Event event = new Event(
                                         eventId: eventId,
-                                        eventName: _eventName);
+                                        eventName: _eventName, transactionId: null);
 
                                     postEvent(event, splitType);
                                   }

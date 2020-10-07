@@ -67,7 +67,10 @@ flutter:
   assets:
     - assets/images/profile_placeholder.jpg
     - assets/images/group_image.png
-  #  - images/a_dot_ham.jpeg
+    - assets/images/upi.png
+    - assets/images/cash.png
+
+    #  - images/a_dot_ham.jpeg
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.
   # For details regarding adding assets from package dependencies, see
