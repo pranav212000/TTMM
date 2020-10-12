@@ -103,15 +103,9 @@ class _EventHomeState extends State<EventHome> {
                     flex: 5,
                     child: Container(
                         height: MediaQuery.of(context).size.width * 0.75,
-                        child: snapshot.data.orders == null ||
-                                snapshot.data.orders.length == 0
-                            ? Center(
-                                child: Text('No orders yet'),
-                              )
-                            // TODO extract this future builder to another widget.....orders list like group list probably!
-                            : OrderList(
-                                eventId: snapshot.data.eventId,
-                                key: _orderListKey)),
+                        child: OrderList(
+                            eventId: snapshot.data.eventId,
+                            key: _orderListKey)),
                   ),
                   Expanded(
                     flex: 2,
@@ -306,6 +300,7 @@ class _EventHomeState extends State<EventHome> {
       Order order = Order.fromJson(map['order']);
 
       _orderListKey.currentState.refreshList(order);
+
       showSnackbar(_scaffoldKey, 'SUCCESS');
     } else {
       showSnackbar(_scaffoldKey, 'ERROR');

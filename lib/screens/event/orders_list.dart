@@ -57,15 +57,18 @@ class OrderListState extends State<OrderList> {
     return FutureBuilder(
       future: _future,
       builder: (BuildContext context, AsyncSnapshot snapshot) {
+        print(snapshot.data);
         if (snapshot.connectionState == ConnectionState.waiting)
           return CircularProgressIndicator();
         else if (snapshot.data == null || snapshot.data.length == 0) {
+          print('INSIDE NULL IF');
           return Center(
             child: Text('No Orders yet!'),
           );
         } else {
-          if (_orders.length != snapshot.data.length) _orders = snapshot.data;
-          // return ListView.builder(
+          print('INSIDE not NULL IF');
+          print('orders length ${_orders.length}');
+          // if (_orders.length != snapshot.data.length) _orders = snapshot.data;
           return AnimatedList(
             key: listKey,
             shrinkWrap: true,
@@ -81,9 +84,15 @@ class OrderListState extends State<OrderList> {
   }
 
   void refreshList(Order order) {
-    setState(() {
-      _orders.add(order);
-    });
+    if (_orders == null || _orders.length == 0) {
+      print('Future first');
+      print(_future.toString());
+      _future = getOrders();
+    } else
+      setState(() {
+        _orders.add(order);
+        listKey.currentState.insertItem(_orders.length - 1);
+      });
   }
 
   Widget _buildItem(Order order, Animation animation) {
@@ -273,8 +282,11 @@ class OrderListState extends State<OrderList> {
       Navigator.of(context).pop();
       setState(() {
         int index = _orders.indexWhere((order) => order.orderId == orderId);
-        listKey.currentState.removeItem(index,
-            (context, animation) => _buildItem(_orders[index], animation));
+        var removedItem = _orders.removeAt(index);
+        listKey.currentState.removeItem(index, (context, animation) {
+          _buildItem(removedItem, animation);
+        });
+
         Scaffold.of(context)
             .showSnackBar(SnackBar(content: Text('Order deleted')));
       });
