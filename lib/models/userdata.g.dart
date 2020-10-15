@@ -12,7 +12,8 @@ UserData _$UserDataFromJson(Map<String, dynamic> json) {
       name: json['name'],
       phoneNumber: json['phoneNumber'],
       groups: json['groups'] as List,
-      profileUrl: json['profileUrl']);
+      profileUrl: json['profileUrl'],
+      upiId: json['upiId']);
 }
 
 Map<String, dynamic> _$UserDataToJson(UserData instance) => <String, dynamic>{
@@ -20,5 +21,6 @@ Map<String, dynamic> _$UserDataToJson(UserData instance) => <String, dynamic>{
       'name': instance.name,
       'phoneNumber': instance.phoneNumber,
       'groups': instance.groups,
-      'profileUrl': instance.profileUrl
+      'profileUrl': instance.profileUrl,
+      'upiId': instance.upiId
     };

@@ -14,12 +14,28 @@ class _$TransactionApiService extends TransactionApiService {
 
   final definitionType = TransactionApiService;
 
-  Future<Response> postPaid(String eventId, Map<String, dynamic> body) {
-    final $url = '/transaction/paid';
+  Future<Response> postPayBill(String eventId, Map<String, dynamic> body) {
+    final $url = '/transaction/payBill';
     final Map<String, dynamic> $params = {'eventId': eventId};
     final $body = body;
     final $request =
         Request('POST', $url, client.baseUrl, body: $body, parameters: $params);
+    return client.send<dynamic, dynamic>($request);
+  }
+
+  Future<Response> postPayPerson(String eventId, Map<String, dynamic> body) {
+    final $url = '/transaction/payPerson';
+    final Map<String, dynamic> $params = {'eventId': eventId};
+    final $body = body;
+    final $request =
+        Request('POST', $url, client.baseUrl, body: $body, parameters: $params);
+    return client.send<dynamic, dynamic>($request);
+  }
+
+  Future<Response> allToGets(String eventId) {
+    final $url = '/transaction/allToGets';
+    final Map<String, dynamic> $params = {'eventId': eventId};
+    final $request = Request('GET', $url, client.baseUrl, parameters: $params);
     return client.send<dynamic, dynamic>($request);
   }
 }

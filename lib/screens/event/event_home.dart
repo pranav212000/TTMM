@@ -6,6 +6,7 @@ import 'package:ttmm/models/order.dart';
 import 'package:ttmm/screens/event/bill_payment.dart';
 import 'package:ttmm/screens/event/order_item.dart';
 import 'package:ttmm/screens/event/orders_list.dart';
+import 'package:ttmm/screens/event/pay_person.dart';
 import 'package:ttmm/services/event_api_service.dart';
 import 'package:qrscan/qrscan.dart' as scanner;
 import 'package:ttmm/shared/constants.dart';
@@ -71,8 +72,6 @@ class _EventHomeState extends State<EventHome> {
     super.initState();
   }
 
-// TODO refresh the list of orders!!!
-// FIXME this is a must -^
   @override
   Widget build(BuildContext context) {
     print('WIDGET EVENT');
@@ -139,6 +138,10 @@ class _EventHomeState extends State<EventHome> {
                                           builder: (_) => BillPayment(
                                               eventId: _event.eventId)))
                                       .then((result) {
+                                    if (result == null)
+                                      showSnackbar(
+                                          _scaffoldKey, 'Payment unsuccessful',
+                                          color: Colors.red);
                                     if (result) {
                                       showSnackbar(
                                           _scaffoldKey, 'Payment successful');
@@ -148,34 +151,22 @@ class _EventHomeState extends State<EventHome> {
                                           color: Colors.red);
                                     }
                                   });
-
-                                  // TODO get data the code from here
-                                  // String scanResult = await scanner.scan();
-                                  // print(scanResult);
-                                  // String temp =
-                                  //     "upi://pay?pa=pranavpatil212000@oksbi&pn=Pranav%20Patil&aid=uGICAgIDJjPLAGw";
-                                  // var decoded = Uri.decodeFull(temp);
-                                  // print(decoded);
                                 },
                                 color: Colors.deepOrange,
                                 child: Text('I\'m paying'),
                               ),
                               RaisedButton(
                                 onPressed: () {
-                                  String temp =
-                                      "upi://pay?pa=pranavpatil212000@oksbi&pn=Pranav%20Patil&aid=uGICAgIDJjPLAGw";
-                                  var decoded = Uri.decodeComponent(temp);
-
-                                  Uri uri = Uri.dataFromString(temp);
-                                  Map<String, dynamic> params =
-                                      uri.queryParameters;
-                                  var uid = params['pa'];
-                                  var name = params['pn'];
-                                  print(uid);
-                                  print(Uri.decodeComponent(name));
-                                  print(decoded);
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          // FIXME just keep the eventId
+                                          builder: (context) => PayPerson(
+                                              eventId: widget.event != null
+                                                  ? widget.event.eventId
+                                                  : "040a68d0-07dd-11eb-b854-b701c410207c")));
                                 },
-                                child: Text('DECODE'),
+                                child: Text('Pay Person'),
                               ),
                             ],
                           )
@@ -192,7 +183,7 @@ class _EventHomeState extends State<EventHome> {
     );
   }
 
-// TODO make a separate page with better UI this dialog is ****
+  // TODO make a separate page with better UI this dialog is ****
   Future addOrder(String eventId) async {
     String order;
     final _formkey = GlobalKey<FormState>();
@@ -281,7 +272,7 @@ class _EventHomeState extends State<EventHome> {
         });
   }
 
-// TODO add other quantities as parameters too!
+  // TODO add other quantities as parameters too!
   Future postOrder(String order, String eventId) async {
     Response response = await EventApiService.create().addOrder(eventId, {
       'orderId': Uuid().v1(),

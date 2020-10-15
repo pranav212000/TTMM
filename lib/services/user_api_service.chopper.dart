@@ -14,8 +14,8 @@ class _$UserApiService extends UserApiService {
 
   final definitionType = UserApiService;
 
-  Future<Response> checkUserExists(String uid) {
-    final $url = '/user/checkUser/${uid}';
+  Future<Response> checkUserExists(String phoneNumber) {
+    final $url = '/user/checkUser/${phoneNumber}';
     final $request = Request('GET', $url, client.baseUrl);
     return client.send<dynamic, dynamic>($request);
   }
@@ -27,9 +27,9 @@ class _$UserApiService extends UserApiService {
     return client.send<dynamic, dynamic>($request);
   }
 
-  Future<Response> getUser(String uid) {
+  Future<Response> getUser(String phoneNumber) {
     final $url = '/user/';
-    final Map<String, dynamic> $params = {'phoneNumber': uid};
+    final Map<String, dynamic> $params = {'phoneNumber': phoneNumber};
     final $request = Request('GET', $url, client.baseUrl, parameters: $params);
     return client.send<dynamic, dynamic>($request);
   }

@@ -19,6 +19,13 @@ abstract class GroupApiService extends ChopperService {
   @Get(path: '/{orderId}/events')
   Future<Response> getEvents(@Path('orderId') String orderId);
 
+  @Get(path: '/members')
+  Future<Response> getMembersByGroupId(@Query('groupId') String groupId);
+
+  @Get(path: '/members')
+  Future<Response> getMembersByEventId(@Query('eventId') String eventId);
+
+
   static GroupApiService create() {
     final client = ChopperClient(
         baseUrl: 'https://ttmm-pp.herokuapp.com/api',

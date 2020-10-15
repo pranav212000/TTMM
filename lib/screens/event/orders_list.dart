@@ -12,9 +12,7 @@ import 'order_item.dart';
 class OrderList extends StatefulWidget {
   final String eventId;
 
-  // ChildPage({Key key, this.function}) : super(key: key);
 
-  // OrderList({Key key, @required this.eventId});
   const OrderList({Key key, @required this.eventId}) : super(key: key);
   @override
   OrderListState createState() => OrderListState();
@@ -68,7 +66,6 @@ class OrderListState extends State<OrderList> {
         } else {
           print('INSIDE not NULL IF');
           print('orders length ${_orders.length}');
-          // if (_orders.length != snapshot.data.length) _orders = snapshot.data;
           return AnimatedList(
             key: listKey,
             shrinkWrap: true,

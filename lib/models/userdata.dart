@@ -11,9 +11,10 @@ class UserData {
   String phoneNumber;
   List<dynamic> groups = new List<dynamic>();
   String profileUrl;
+  String upiId;
 
   UserData(
-      {@required this.uid,@required this.name,@required this.phoneNumber, this.groups, this.profileUrl});
+      {@required this.uid,@required this.name,@required this.phoneNumber, this.groups, this.profileUrl, this.upiId});
 
 
   // Map<String, dynamic> toJson() => {
@@ -38,7 +39,7 @@ class UserData {
   //       phoneNumber = json['phoneNumber'],
   //       groups = json['groups'],
   //       profileUrl = json['profileUrl'];
-
+ 
   String getProfileUrl() => this.profileUrl;
 
   factory UserData.fromJson(Map<String, dynamic> json) =>

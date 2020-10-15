@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ttmm/models/transaction.dart';
 import 'package:ttmm/services/transaction_api_service.dart';
 import 'package:ttmm/shared/constants.dart';
+import 'package:ttmm/shared/shared_functions.dart';
 import 'package:upi_india/upi_india.dart';
 import 'package:validators/validators.dart';
 import 'package:qrscan/qrscan.dart' as scanner;
@@ -161,9 +162,14 @@ class _BillPaymentState extends State<BillPayment> {
                               return ListTile(
                                 title: Image.memory(apps[index].icon),
                                 onTap: () async {
+                                  // TODO take note input from the user
                                   UpiResponse _upiResponse =
                                       await initiateTransaction(
-                                          apps[index].app);
+                                          apps[index].app,
+                                          _upiId,
+                                          _name,
+                                          _amount.toDouble(),
+                                          "Paying Bill");
 
                                   if (_upiResponse.error != null) {
                                     switch (_upiResponse.error) {
@@ -197,6 +203,7 @@ class _BillPaymentState extends State<BillPayment> {
                                   } else {
                                     // TODO post payment after upi
                                     String status = _upiResponse.status;
+                                    print(_upiResponse.toString());
                                     switch (status) {
                                       case UpiPaymentStatus.SUCCESS:
                                         print('Success');
@@ -260,7 +267,7 @@ class _BillPaymentState extends State<BillPayment> {
 
     try {
       Response response =
-          await TransactionApiService.create().postPaid(eventId, body);
+          await TransactionApiService.create().postPayBill(eventId, body);
       if (response.statusCode == 200) {
         print(response.body);
         Navigator.of(context).pop(true);
@@ -273,15 +280,15 @@ class _BillPaymentState extends State<BillPayment> {
     }
   }
 
-  Future<UpiResponse> initiateTransaction(String app) async {
-    return _upiIndia.startTransaction(
-      app: app, //  I took only the first app from List<UpiIndiaApp> app.
-      receiverUpiId: _upiId, // Make Sure to change this UPI Id
-      receiverName: _name,
-      transactionRefId: 'testId',
-      // TODO add a valid transaction note
-      transactionNote: 'Not actual. Just an example.',
-      amount: _amount.toDouble(),
-    );
-  }
+  // Future<UpiResponse> initiateTransaction(String app) async {
+  //   return _upiIndia.startTransaction(
+  //     app: app, //  I took only the first app from List<UpiIndiaApp> app.
+  //     receiverUpiId: _upiId, // Make Sure to change this UPI Id
+  //     receiverName: _name,
+  //     transactionRefId: 'testId',
+  //     // TODO add a valid transaction note
+  //     transactionNote: 'Not actual. Just an example.',
+  //     amount: _amount.toDouble(),
+  //   );
+  // }
 }
