@@ -148,6 +148,16 @@ class _PayPersonState extends State<PayPerson>
                         UserData user = snapshot.data[index];
                         return ListTile(
                           title: Text(user.name),
+                          onTap: () async {
+                            if (user.upiId == null) {
+                              showPaymentModeDialog(user.phoneNumber);
+                            } else {
+                              print('UPI ID IS ${user.upiId}');
+                              _upiId = user.upiId;
+                              _name = user.name;
+                              showPaymentModeDialog(user.phoneNumber);
+                            }
+                          },
                         );
                       });
                 }
@@ -198,7 +208,8 @@ class _PayPersonState extends State<PayPerson>
       Response usersResponse = await UserApiService.create().getUsers(body);
       List<UserData> users = new List<UserData>();
       for (Map<String, dynamic> item in usersResponse.body) {
-        users.add(UserData.fromJson(item));
+        if (UserData.fromJson(item).phoneNumber != _phone)
+          users.add(UserData.fromJson(item));
       }
 
       return users;
