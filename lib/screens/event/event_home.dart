@@ -158,13 +158,29 @@ class _EventHomeState extends State<EventHome> {
                               RaisedButton(
                                 onPressed: () {
                                   Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          // FIXME just keep the eventId
-                                          builder: (context) => PayPerson(
-                                              eventId: widget.event != null
-                                                  ? widget.event.eventId
-                                                  : "040a68d0-07dd-11eb-b854-b701c410207c")));
+                                          context,
+                                          MaterialPageRoute(
+                                              // FIXME just keep the eventId
+                                              builder: (context) => PayPerson(
+                                                  eventId: widget.event != null
+                                                      ? widget.event.eventId
+                                                      : "040a68d0-07dd-11eb-b854-b701c410207c")))
+                                      .then((result) {
+                                    if (result == null)
+                                      showSnackbar(
+                                          _scaffoldKey, 'Payment unsuccessful',
+                                          color: Colors.red);
+                                    if (result) {
+                                      showSnackbar(
+                                          _scaffoldKey, 'Payment successful',
+                                          color: Colors.green);
+                                    } else {
+                                      showSnackbar(
+                                          _scaffoldKey, 'Payment unsuccessful',
+                                          color: Colors.red);
+                                    }
+                                  });
+                                  ;
                                 },
                                 child: Text('Pay Person'),
                               ),

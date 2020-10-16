@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:chopper/chopper.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ttmm/models/transaction.dart';
 import 'package:ttmm/models/userdata.dart';
 import 'package:ttmm/services/group_api_service.dart';
@@ -9,6 +10,10 @@ import 'package:ttmm/services/transaction_api_service.dart';
 import 'package:ttmm/services/user_api_service.dart';
 import 'package:ttmm/shared/constants.dart';
 import 'package:ttmm/shared/loading.dart';
+import 'package:qrscan/qrscan.dart' as scanner;
+import 'package:ttmm/shared/shared_functions.dart';
+import 'package:upi_india/upi_india.dart';
+import 'package:validators/validators.dart';
 
 class PayPerson extends StatefulWidget {
   String eventId;
@@ -24,6 +29,15 @@ class _PayPersonState extends State<PayPerson>
   TabController _tabController;
   Future _futureToGet;
   Future _futureAll;
+  String _upiId;
+  String _name;
+  String _phone;
+  bool _isUpi = false;
+  UpiIndia _upiIndia = UpiIndia();
+  List<UpiApp> apps;
+  String _amount;
+
+  String _note;
 
   @override
   void initState() {
@@ -32,6 +46,13 @@ class _PayPersonState extends State<PayPerson>
     _tabController.addListener(_handleTabIndex);
     _futureToGet = getAllToGets();
     _futureAll = getAllMembers();
+    getPhoneNumber();
+
+    _upiIndia.getAllUpiApps().then((value) {
+      setState(() {
+        apps = value;
+      });
+    });
   }
 
   @override
@@ -86,9 +107,89 @@ class _PayPersonState extends State<PayPerson>
                       return ListTile(
                         title: Text(map['user'].name),
                         trailing: Text(map['amount'].toString()),
-                        onTap: () {
+                        onTap: () async {
                           if (map['user'].upiId == null) {
-                            print('NO UPI ID SCAN QR CODE');
+                            print('NO UPI ID, SCAN QR CODE');
+
+                            String scanResult = await scanner.scan();
+                            print(scanResult);
+                            var decoded = Uri.decodeComponent(scanResult);
+
+                            Uri uri = Uri.dataFromString(scanResult);
+                            Map<String, dynamic> params = uri.queryParameters;
+                            var uid = params['pa'];
+                            var name = Uri.decodeComponent(params['pn']);
+                            print(uid);
+                            print(name);
+                            print(decoded);
+                            setState(() {
+                              _upiId = uid;
+                              _name = name;
+                              _isUpi = true;
+                            });
+
+                            showDialog(
+                                context: _scaffoldKey.currentContext,
+                                builder: (context) {
+                                  return AlertDialog(
+                                    title: Text('Enter amount'),
+                                    content: SingleChildScrollView(
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: [
+                                          TextField(
+                                            decoration: InputDecoration(
+                                                border: InputBorder.none,
+                                                hintText: 'Amount'),
+                                            onChanged: (val) => _amount = val,
+                                          ),
+                                          TextField(
+                                            decoration: InputDecoration(
+                                                border: InputBorder.none,
+                                                hintText: 'Note'),
+                                            onChanged: (val) => _note = val,
+                                          ),
+                                          Row(
+                                            children: [
+                                              FlatButton(
+                                                color: Colors.green,
+                                                child: Image.asset(
+                                                  'assets/images/cash.png',
+                                                  scale: 5,
+                                                ),
+                                                onPressed: null,
+                                              ),
+                                              FlatButton(
+                                                child: Image.asset(
+                                                  'assets/images/upi.png',
+                                                  scale: 4,
+                                                ),
+                                                onPressed: () {
+                                                  if (_amount.isEmpty)
+                                                    showSnackbar(_scaffoldKey,
+                                                        "Please enter an amount",
+                                                        color: Colors.red);
+                                                  else if (!isNumeric(_amount))
+                                                    showSnackbar(_scaffoldKey,
+                                                        "Enter valid amount",
+                                                        color: Colors.red);
+                                                  else {
+                                                    Navigator.pop(context);
+                                                    showAppsBottomSheet(
+                                                        map['user']
+                                                            .phoneNumber);
+                                                  }
+                                                },
+                                              ),
+                                            ],
+                                          )
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                });
                           } else {
                             print('UPI ID IS ${map['user'].upiId}');
                           }
@@ -178,6 +279,94 @@ class _PayPersonState extends State<PayPerson>
     } catch (e) {
       print(e);
       return null;
+    }
+  }
+
+  Future getPhoneNumber() async {
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    _phone = preferences.getString(currentPhoneNUmber);
+    print('GOT PHONE');
+    print(_phone);
+  }
+
+  showAppsBottomSheet(String to) {
+    showModalBottomSheet(
+        context: context,
+        builder: (BuildContext bc) {
+          return ListView.builder(
+            itemCount: apps.length,
+            shrinkWrap: true,
+            itemBuilder: (BuildContext context, int index) {
+              return ListTile(
+                leading: Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: Image.memory(
+                    apps[index].icon,
+                  ),
+                ),
+                title: Text(getUpiAppName(apps[index].app)),
+                onTap: () async {
+                  UpiResponse _upiResponse = await initiateTransaction(
+                      apps[index].app,
+                      _upiId,
+                      _name,
+                      double.parse(_amount),
+                      _note);
+
+                  if (_upiResponse.error != null) {
+                    displayUpiError(_scaffoldKey, _upiResponse.error);
+                  } else {
+                    String status = _upiResponse.status;
+                    switch (status) {
+                      case UpiPaymentStatus.SUCCESS:
+                        print('Success');
+                        showSnackbar(_scaffoldKey, "Payment successful",
+                            color: Colors.green);
+
+                        postPayPerson(
+                            widget.eventId, int.parse(_amount), upi, to);
+
+                        break;
+                      case UpiPaymentStatus.SUBMITTED:
+                        print('Submited');
+                        showSnackbar(_scaffoldKey, "Payment submitted",
+                            color: Colors.amber);
+                        break;
+                      case UpiPaymentStatus.FAILURE:
+                        print('FAILURE');
+                        showSnackbar(_scaffoldKey, "Payment failure",
+                            color: Colors.red);
+                        break;
+                      // default:
+                    }
+                  }
+                },
+              );
+            },
+          );
+        });
+  }
+
+  postPayPerson(String eventId, int amt, String mode, String toPhone) async {
+    Map<String, dynamic> body = {
+      phoneNumber: _phone,
+      paymentMode: mode,
+      amount: amt,
+      to: toPhone
+    };
+    try {
+      Response response =
+          await TransactionApiService.create().postPayPerson(eventId, body);
+      Navigator.of(context).pop(true);
+      Navigator.of(context).pop(true);
+
+      print(response.body);
+    } catch (e) {
+      Response response = e;
+      Map<String, dynamic> map = json.decode(response.body);
+      print(map["error"]);
+      Navigator.of(context).pop(false);
+      Navigator.of(context).pop(false);
     }
   }
 
