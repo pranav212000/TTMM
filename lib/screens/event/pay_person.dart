@@ -110,89 +110,12 @@ class _PayPersonState extends State<PayPerson>
                         trailing: Text(map['amount'].toString()),
                         onTap: () async {
                           if (map['user'].upiId == null) {
-                            print('NO UPI ID, SCAN QR CODE');
-
-                            String scanResult = await scanner.scan();
-                            print(scanResult);
-                            var decoded = Uri.decodeComponent(scanResult);
-
-                            Uri uri = Uri.dataFromString(scanResult);
-                            Map<String, dynamic> params = uri.queryParameters;
-                            var uid = params['pa'];
-                            var name = Uri.decodeComponent(params['pn']);
-                            print(uid);
-                            print(name);
-                            print(decoded);
-                            setState(() {
-                              _upiId = uid;
-                              _name = name;
-                              _isUpi = true;
-                            });
-
-                            showDialog(
-                                context: _scaffoldKey.currentContext,
-                                builder: (context) {
-                                  return AlertDialog(
-                                    title: Text('Enter amount'),
-                                    content: SingleChildScrollView(
-                                      child: Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                        children: [
-                                          TextField(
-                                            decoration: InputDecoration(
-                                                border: InputBorder.none,
-                                                hintText: 'Amount'),
-                                            onChanged: (val) => _amount = val,
-                                          ),
-                                          TextField(
-                                            decoration: InputDecoration(
-                                                border: InputBorder.none,
-                                                hintText: 'Note'),
-                                            onChanged: (val) => _note = val,
-                                          ),
-                                          Row(
-                                            children: [
-                                              FlatButton(
-                                                color: Colors.green,
-                                                child: Image.asset(
-                                                  'assets/images/cash.png',
-                                                  scale: 5,
-                                                ),
-                                                onPressed: null,
-                                              ),
-                                              FlatButton(
-                                                child: Image.asset(
-                                                  'assets/images/upi.png',
-                                                  scale: 4,
-                                                ),
-                                                onPressed: () {
-                                                  if (_amount.isEmpty)
-                                                    showSnackbar(_scaffoldKey,
-                                                        "Please enter an amount",
-                                                        color: Colors.red);
-                                                  else if (!isNumeric(_amount))
-                                                    showSnackbar(_scaffoldKey,
-                                                        "Enter valid amount",
-                                                        color: Colors.red);
-                                                  else {
-                                                    Navigator.pop(context);
-                                                    showAppsBottomSheet(
-                                                        map['user']
-                                                            .phoneNumber);
-                                                  }
-                                                },
-                                              ),
-                                            ],
-                                          )
-                                        ],
-                                      ),
-                                    ),
-                                  );
-                                });
+                            showPaymentModeDialog(map['user'].phoneNumber);
                           } else {
                             print('UPI ID IS ${map['user'].upiId}');
+                            _upiId = map['user'].upiId;
+                            _name = map['user'].name;
+                            showPaymentModeDialog(map['user'].phoneNumber);
                           }
                         },
                       );
@@ -290,6 +213,82 @@ class _PayPersonState extends State<PayPerson>
     _phone = preferences.getString(currentPhoneNUmber);
     print('GOT PHONE');
     print(_phone);
+  }
+
+  showPaymentModeDialog(String phoneNumber) {
+    showDialog(
+        context: _scaffoldKey.currentContext,
+        builder: (context) {
+          return AlertDialog(
+            title: Text('Enter amount'),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  TextField(
+                    decoration: InputDecoration(
+                        border: InputBorder.none, hintText: 'Amount'),
+                    onChanged: (val) => _amount = val,
+                  ),
+                  TextField(
+                    decoration: InputDecoration(
+                        border: InputBorder.none, hintText: 'Note'),
+                    onChanged: (val) => _note = val,
+                  ),
+                  Row(
+                    children: [
+                      FlatButton(
+                        color: Colors.green,
+                        child: Image.asset(
+                          'assets/images/cash.png',
+                          scale: 5,
+                        ),
+                        onPressed: null,
+                      ),
+                      FlatButton(
+                        child: Image.asset(
+                          'assets/images/upi.png',
+                          scale: 4,
+                        ),
+                        onPressed: () async {
+                          if (_amount.isEmpty)
+                            showSnackbar(_scaffoldKey, "Please enter an amount",
+                                color: Colors.red);
+                          else if (!isNumeric(_amount))
+                            showSnackbar(_scaffoldKey, "Enter valid amount",
+                                color: Colors.red);
+                          else {
+                            if (_upiId == null) {
+                              print('NO UPI ID, SCAN QR CODE');
+
+                              String scanResult = await scanner.scan();
+                              print(scanResult);
+                              var decoded = Uri.decodeComponent(scanResult);
+
+                              Uri uri = Uri.dataFromString(scanResult);
+                              Map<String, dynamic> params = uri.queryParameters;
+                              var uid = params['pa'];
+                              var name = Uri.decodeComponent(params['pn']);
+                              print(uid);
+                              print(name);
+                              print(decoded);
+                              _upiId = uid;
+                              _name = name;
+                            }
+                            _isUpi = true;
+                            Navigator.pop(context);
+                            showAppsBottomSheet(phoneNumber);
+                          }
+                        },
+                      ),
+                    ],
+                  )
+                ],
+              ),
+            ),
+          );
+        });
   }
 
   showAppsBottomSheet(String to) {
