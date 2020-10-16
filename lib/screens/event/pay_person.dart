@@ -44,9 +44,10 @@ class _PayPersonState extends State<PayPerson>
     super.initState();
     _tabController = TabController(length: 2, vsync: this, initialIndex: 0);
     _tabController.addListener(_handleTabIndex);
+    getPhoneNumber();
+
     _futureToGet = getAllToGets();
     _futureAll = getAllMembers();
-    getPhoneNumber();
 
     _upiIndia.getAllUpiApps().then((value) {
       setState(() {
@@ -242,8 +243,10 @@ class _PayPersonState extends State<PayPerson>
     List<String> phoneNumbers = new List<String>();
     Map<String, dynamic> amounts = new Map<String, dynamic>();
     for (Map<String, dynamic> item in response.body) {
-      phoneNumbers.add(item[phoneNumber]);
-      amounts[item[phoneNumber]] = item[amount];
+      if (item[phoneNumber] != _phone) {
+        phoneNumbers.add(item[phoneNumber]);
+        amounts[item[phoneNumber]] = item[amount];
+      }
     }
 
     Map<String, dynamic> body = {'phoneNumbers': phoneNumbers};
