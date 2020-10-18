@@ -25,6 +25,12 @@ abstract class UserApiService extends ChopperService {
   @Get(path: '/multiple')
   Future<Response> getUsers(@Body() Map<String, dynamic> body);
 
+  @Get(path: '/toGive')
+  Future<Response> getUserToGives(@Query('phoneNumber') String phoneNumber);
+  
+  @Get(path: '/toGet')
+  Future<Response> getUserToGets(@Query('phoneNumber') String phoneNumber);
+
   static UserApiService create() {
     final client = ChopperClient(
         baseUrl: 'https://ttmm-pp.herokuapp.com/api',
