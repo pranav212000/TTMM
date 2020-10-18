@@ -24,7 +24,7 @@ class _MyOrdersState extends State<MyOrders> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('My Orders'),
+        title: Center(child: Text('My Orders')),
       ),
       body: FutureBuilder(
         future: _future,
