@@ -1,6 +1,7 @@
 import 'package:chopper/chopper.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:solid_bottom_sheet/solid_bottom_sheet.dart';
 import 'package:ttmm/models/event.dart';
 import 'package:ttmm/models/order.dart';
 import 'package:ttmm/screens/event/bill_payment.dart';
@@ -34,6 +35,7 @@ class _EventHomeState extends State<EventHome> {
   String _phoneNumber;
   Future _future;
   Future _orders;
+  SolidController _controller = SolidController();
 
   // TODO clear this shit jugad
   Event _event;
@@ -65,7 +67,7 @@ class _EventHomeState extends State<EventHome> {
   @override
   void initState() {
     if (widget.event == null) {
-      _future = _getEvent("040a68d0-07dd-11eb-b854-b701c410207c");
+      _future = _getEvent("31f4d100-102e-11eb-8e7c-dfe2bca85517");
     }
     getPhoneNumber();
     // _orders = getOrders();
@@ -83,7 +85,7 @@ class _EventHomeState extends State<EventHome> {
       // FIXME
       future: _getEvent(widget.event != null
           ? widget.event.eventId
-          : "040a68d0-07dd-11eb-b854-b701c410207c"),
+          : "31f4d100-102e-11eb-8e7c-dfe2bca85517"),
       builder: (BuildContext context, AsyncSnapshot snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting)
           return Loading();
@@ -100,97 +102,94 @@ class _EventHomeState extends State<EventHome> {
                 children: [
                   Expanded(
                     flex: 5,
-                    child: Container(
-                        height: MediaQuery.of(context).size.width * 0.75,
-                        child: OrderList(
-                            eventId: snapshot.data.eventId,
-                            key: _orderListKey)),
-                  ),
-                  Expanded(
-                    flex: 2,
-                    child: Container(
-                      color: Colors.deepPurple,
-                      height: MediaQuery.of(context).size.height * 0.25,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          Column(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              RaisedButton(
-                                onPressed: () =>
-                                    addOrder(snapshot.data.eventId),
-                                color: Colors.deepOrange,
-                                child: Text('Add Order'),
-                              ),
-                              RaisedButton(
-                                onPressed: null,
-                              ),
-                            ],
-                          ),
-                          Column(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              RaisedButton(
-                                onPressed: () async {
-                                  Navigator.of(context)
-                                      .push(MaterialPageRoute(
-                                          builder: (_) => BillPayment(
-                                              eventId: _event.eventId)))
-                                      .then((result) {
-                                    if (result == null)
-                                      showSnackbar(
-                                          _scaffoldKey, 'Payment unsuccessful',
-                                          color: Colors.red);
-                                    if (result) {
-                                      showSnackbar(
-                                          _scaffoldKey, 'Payment successful');
-                                    } else {
-                                      showSnackbar(
-                                          _scaffoldKey, 'Payment unsuccessful',
-                                          color: Colors.red);
-                                    }
-                                  });
-                                },
-                                color: Colors.deepOrange,
-                                child: Text('I\'m paying'),
-                              ),
-                              RaisedButton(
-                                onPressed: () {
-                                  Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                              // FIXME just keep the eventId
-                                              builder: (context) => PayPerson(
-                                                  eventId: widget.event != null
-                                                      ? widget.event.eventId
-                                                      : "040a68d0-07dd-11eb-b854-b701c410207c")))
-                                      .then((result) {
-                                    if (result == null)
-                                      showSnackbar(
-                                          _scaffoldKey, 'Payment unsuccessful',
-                                          color: Colors.red);
-                                    if (result) {
-                                      showSnackbar(
-                                          _scaffoldKey, 'Payment successful',
-                                          color: Colors.green);
-                                    } else {
-                                      showSnackbar(
-                                          _scaffoldKey, 'Payment unsuccessful',
-                                          color: Colors.red);
-                                    }
-                                  });
-                                  ;
-                                },
-                                child: Text('Pay Person'),
-                              ),
-                            ],
-                          )
-                        ],
-                      ),
-                    ),
+                    child: OrderList(
+                        eventId: snapshot.data.eventId, key: _orderListKey),
                   ),
                 ],
+              ),
+              bottomSheet: SolidBottomSheet(
+                controller: _controller,
+                maxHeight: 180,
+                headerBar: ClipRRect(
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                  child: Container(
+                    color: Theme.of(context).primaryColor,
+                    height: 50,
+                    child: Center(
+                      child: Text("Swipe me!"),
+                    ),
+                  ),
+                ),
+                body: ListView(
+                  children: [
+                    ListTile(
+                      title: Text('Add Order'),
+                      onTap: () {
+                        _controller.hide();
+                        addOrder(snapshot.data.eventId);
+                      },
+                    ),
+                    ListTile(
+                      title: Text('I\'m paying'),
+                      onTap: () async {
+                        _controller.hide();
+                        Navigator.of(context)
+                            .push(MaterialPageRoute(
+                                builder: (_) =>
+                                    BillPayment(eventId: _event.eventId)))
+                            .then((result) {
+                          if (result == null)
+                            showSnackbar(_scaffoldKey, 'Payment unsuccessful',
+                                color: Colors.red);
+                          if (result) {
+                            showSnackbar(_scaffoldKey, 'Payment successful');
+                          } else {
+                            showSnackbar(_scaffoldKey, 'Payment unsuccessful',
+                                color: Colors.red);
+                          }
+                        });
+                      },
+                    ),
+                    ListTile(
+                      title: Text('Pay Person'),
+                      onTap: () {
+                        _controller.hide();
+                        Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    // FIXME just keep the eventId
+                                    builder: (context) => PayPerson(
+                                        eventId: widget.event != null
+                                            ? widget.event.eventId
+                                            : "040a68d0-07dd-11eb-b854-b701c410207c")))
+                            .then((result) {
+                          if (result == null)
+                            showSnackbar(_scaffoldKey, 'Payment unsuccessful',
+                                color: Colors.red);
+                          if (result) {
+                            showSnackbar(_scaffoldKey, 'Payment successful',
+                                color: Colors.green);
+                          } else {
+                            showSnackbar(_scaffoldKey, 'Payment unsuccessful',
+                                color: Colors.red);
+                          }
+                        });
+                      },
+                    ),
+                  ],
+                ),
+                // body: Row(
+                //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                //   children: [
+                //     RaisedButton(
+                //       color: Colors.green,
+                //       onPressed: () => addOrder(snapshot.data.eventId),
+                //       child: Text('Add Order'),
+                //     ),
+                //     FlatButton(onPressed: null, child: Text('Click me!')),
+                //     FlatButton(onPressed: null, child: Text('Click me!')),
+                //   ],
+                // ),
               ),
             );
           }

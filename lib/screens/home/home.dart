@@ -20,11 +20,12 @@ import 'package:ttmm/shared/drawer.dart';
 import 'package:ttmm/wrapper.dart';
 
 class Home extends StatefulWidget {
+  const Home({Key key}) : super(key: key);
   @override
   _HomeState createState() => _HomeState();
 }
 
-class _HomeState extends State<Home> {
+class _HomeState extends State<Home> with AutomaticKeepAliveClientMixin<Home> {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
 
   final CollectionReference users =
@@ -34,6 +35,8 @@ class _HomeState extends State<Home> {
 
   Future<UserData> _future;
 
+  @override
+  bool get wantKeepAlive => true;
   // Future getUserData(firebaseAuth.User user) async {
   //   try {
   //     UserApiService.create().checkUserExists(user.uid).then((response) {
@@ -86,8 +89,9 @@ class _HomeState extends State<Home> {
 
   @override
   void initState() {
-    _future = _getUserData();
     super.initState();
+
+    _future = _getUserData();
   }
 
   Future<UserData> _getUserData() async {
@@ -110,6 +114,7 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     final firebaseuser = Provider.of<firebaseAuth.User>(context);
+    super.build(context);
 
     return FutureBuilder<UserData>(
       future: _future,

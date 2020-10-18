@@ -16,6 +16,9 @@ abstract class UserApiService extends ChopperService {
   @Get(path: '/')
   Future<Response> getUser(@Query('phoneNumber') String phoneNumber);
 
+  @Get(path: '/orders')
+  Future<Response> getUserOrders(@Query('phoneNumber') String phoneNumber);
+
   @Get(path: 'syncContacts')
   Future<Response> syncContacts(@Body() Map<String, dynamic> body);
 

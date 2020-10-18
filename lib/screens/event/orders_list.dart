@@ -57,15 +57,13 @@ class OrderListState extends State<OrderList> {
       builder: (BuildContext context, AsyncSnapshot snapshot) {
         print(snapshot.data);
         if (snapshot.connectionState == ConnectionState.waiting)
-          return CircularProgressIndicator();
+          return Center(child: CircularProgressIndicator());
         else if (snapshot.data == null || snapshot.data.length == 0) {
           print('INSIDE NULL IF');
           return Center(
             child: Text('No Orders yet!'),
           );
         } else {
-          print('INSIDE not NULL IF');
-          print('orders length ${_orders.length}');
           return AnimatedList(
             key: listKey,
             shrinkWrap: true,
@@ -82,7 +80,6 @@ class OrderListState extends State<OrderList> {
 
   void refreshList(Order order) {
     if (_orders == null || _orders.length == 0) {
-      print('Future first');
       print(_future.toString());
       _future = getOrders();
     } else

@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ttmm/models/event.dart';
 import 'package:ttmm/models/group.dart';
+import 'package:ttmm/navigator.dart';
 import 'package:ttmm/screens/authenticate/register.dart';
 import 'package:ttmm/screens/authenticate/signin.dart';
 import 'package:ttmm/screens/event/event_home.dart';
@@ -46,23 +47,21 @@ class Wrapper extends StatelessWidget {
     }
   }
 
- 
-
   @override
   Widget build(BuildContext context) {
     final user = Provider.of<firebaseAuth.User>(context);
 
     if (user == null)
       return SignIn();
-    // else {
-    //   setSharedPreferences(user);
-    //   return Home();
-    // }
-// TODO fix this jugad!
     else {
       setSharedPreferences(user);
-      return EventHome();
+      return NavigatorPage();
     }
+// TODO fix this jugad!
+    // else {
+    //   setSharedPreferences(user);
+    //   return EventHome();
+    // }
   }
 
   void setSharedPreferences(firebaseAuth.User user) async {
