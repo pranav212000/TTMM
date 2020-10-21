@@ -198,91 +198,109 @@ class _EventHomeState extends State<EventHome> {
     );
   }
 
-  // TODO make a separate page with better UI this dialog is ****
   Future addOrder(String eventId) async {
     String order;
+    bool _isLoading = false;
     final _formkey = GlobalKey<FormState>();
     showDialog(
         context: _scaffoldKey.currentContext,
         builder: (context) {
           return StatefulBuilder(builder: (BuildContext context, setState) {
-            return AlertDialog(
-              title: Text('Enter order'),
-              content: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Form(
-                      key: _formkey,
-                      child: Column(
-                        children: [
-                          TextFormField(
-                            decoration: textInputDecoration.copyWith(
-                                labelText: 'Order'),
-                            validator: (val) =>
-                                val.isEmpty ? 'Enter order name' : null,
-                            onChanged: (val) => order = val,
-                          ),
-                          SizedBox(
-                            height: 10.0,
-                          ),
-                          TextFormField(
-                            decoration: textInputDecoration.copyWith(
-                                labelText: 'Quantity'),
-                            validator: (val) => val.isEmpty
-                                ? 'Enter quantity'
-                                : (!isNumeric(val) ? 'Enter a number' : null),
-                            onChanged: (val) {
-                              if (isNumeric(val))
-                                setState(() {
-                                  _quantity = int.parse(val);
-                                });
-                            },
-                          ),
-                          SizedBox(
-                            height: 10.0,
-                          ),
-                          TextFormField(
-                            decoration:
-                                textInputDecoration.copyWith(labelText: 'Cost'),
-                            validator: (val) => val.isEmpty
-                                ? 'Enter cost'
-                                : !isNumeric(val) ? 'Enter a number' : null,
-                            onChanged: (val) {
-                              if (isNumeric(val))
-                                setState(() {
-                                  _cost = int.parse(val);
-                                });
-                            },
-                          ),
-                          SizedBox(
-                            height: 10.0,
-                          ),
-                          Visibility(
-                              visible:
-                                  _quantity == 0 || _cost == 0 ? false : true,
-                              child: Text('Total Cost = ${_quantity * _cost}')),
-                          SizedBox(
-                            height: 10.0,
-                          ),
-                          RaisedButton(
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10.0)),
-                            color: Colors.blue,
-                            onPressed: () {
-                              if (_formkey.currentState.validate()) {
-                                postOrder(order, eventId);
-                              }
-                            },
-                            child: Text('Create'),
-                          )
-                        ],
+            return Stack(children: [
+              AlertDialog(
+                title: Text('Enter order'),
+                content: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Form(
+                        key: _formkey,
+                        child: Column(
+                          children: [
+                            TextFormField(
+                              decoration: textInputDecoration.copyWith(
+                                  labelText: 'Order'),
+                              validator: (val) =>
+                                  val.isEmpty ? 'Enter order name' : null,
+                              onChanged: (val) => order = val,
+                            ),
+                            SizedBox(
+                              height: 10.0,
+                            ),
+                            TextFormField(
+                              decoration: textInputDecoration.copyWith(
+                                  labelText: 'Quantity'),
+                              validator: (val) => val.isEmpty
+                                  ? 'Enter quantity'
+                                  : (!isNumeric(val) ? 'Enter a number' : null),
+                              onChanged: (val) {
+                                if (isNumeric(val))
+                                  setState(() {
+                                    _quantity = int.parse(val);
+                                  });
+                              },
+                            ),
+                            SizedBox(
+                              height: 10.0,
+                            ),
+                            TextFormField(
+                              decoration: textInputDecoration.copyWith(
+                                  labelText: 'Cost'),
+                              validator: (val) => val.isEmpty
+                                  ? 'Enter cost'
+                                  : !isNumeric(val) ? 'Enter a number' : null,
+                              onChanged: (val) {
+                                if (isNumeric(val))
+                                  setState(() {
+                                    _cost = int.parse(val);
+                                  });
+                              },
+                            ),
+                            SizedBox(
+                              height: 10.0,
+                            ),
+                            Visibility(
+                                visible:
+                                    _quantity == 0 || _cost == 0 ? false : true,
+                                child:
+                                    Text('Total Cost = ${_quantity * _cost}')),
+                            SizedBox(
+                              height: 10.0,
+                            ),
+                            RaisedButton(
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10.0)),
+                              color: Colors.blue,
+                              onPressed: _isLoading
+                                  ? null
+                                  : () {
+                                      if (_formkey.currentState.validate()) {
+                                        setState(() {
+                                          _isLoading = true;
+                                        });
+                                        postOrder(order, eventId);
+                                      }
+                                    },
+                              child: Text('Create'),
+                            )
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
-            );
+              Visibility(
+                  visible: _isLoading,
+                  child: Container(
+                    width: double.infinity,
+                    height: double.infinity,
+                    decoration: BoxDecoration(color: Colors.black38),
+                    child: Center(
+                      child: CircularProgressIndicator(),
+                    ),
+                  ))
+            ]);
           });
         });
   }
@@ -298,7 +316,6 @@ class _EventHomeState extends State<EventHome> {
       'cost': _cost,
       'totalCost': _quantity * _cost
     });
-    Navigator.of(context).pop();
 
     if (response.statusCode == 200) {
       print('SUCCESS');
@@ -308,6 +325,7 @@ class _EventHomeState extends State<EventHome> {
       _orderListKey.currentState.refreshList(order);
 
       showSnackbar(_scaffoldKey, 'SUCCESS');
+      Navigator.of(context).pop();
     } else {
       showSnackbar(_scaffoldKey, 'ERROR');
     }

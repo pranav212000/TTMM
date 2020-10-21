@@ -14,8 +14,7 @@ import 'package:uuid/uuid.dart';
 class GroupHome extends StatefulWidget {
   final Group group;
   // FIXME change like event and order list
-  final String groupId;
-  GroupHome({@required this.group, this.groupId});
+  GroupHome({@required this.group});
 
   @override
   _GroupHomeState createState() => _GroupHomeState();
@@ -72,7 +71,7 @@ class _GroupHomeState extends State<GroupHome> {
               context: _scaffoldKey.currentContext,
               builder: (BuildContext context) {
                 return AddEventDialog(
-                  groupId: widget.groupId,
+                  groupId: widget.group.groupId,
                   scaffoldKey: _scaffoldKey,
                   eventListKey: _eventListKey,
                 );
@@ -212,7 +211,6 @@ class _AddEventDialogState extends State<AddEventDialog> {
     Response response = await EventApiService.create()
         .addEvent(widget.groupId, splitType, event.toJson());
 
-    print(response);
     if (response.statusCode != 200) {
       showSnackbar(widget.scaffoldKey, 'Could not add event');
     } else {

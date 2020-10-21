@@ -12,7 +12,6 @@ import 'order_item.dart';
 class OrderList extends StatefulWidget {
   final String eventId;
 
-
   const OrderList({Key key, @required this.eventId}) : super(key: key);
   @override
   OrderListState createState() => OrderListState();
@@ -80,8 +79,10 @@ class OrderListState extends State<OrderList> {
 
   void refreshList(Order order) {
     if (_orders == null || _orders.length == 0) {
-      print(_future.toString());
-      _future = getOrders();
+      if (_orders == null) _orders = new List<Order>();
+      setState(() {
+        _future = getOrders();
+      });
     } else
       setState(() {
         _orders.add(order);
