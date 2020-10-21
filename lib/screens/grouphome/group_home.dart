@@ -23,12 +23,10 @@ class GroupHome extends StatefulWidget {
 
 class _GroupHomeState extends State<GroupHome> {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
-  final _formKey = GlobalKey<FormState>();
   final GlobalKey<EventListState> _eventListKey =
       new GlobalKey<EventListState>();
 
-  bool _loading = false;
-  String _eventName = '';
+  // String _eventName = '';
   String splitType = evenly;
 
   @override
@@ -73,75 +71,10 @@ class _GroupHomeState extends State<GroupHome> {
           showDialog(
               context: _scaffoldKey.currentContext,
               builder: (BuildContext context) {
-                return AlertDialog(
-                  title: Text('Enter event name'),
-                  content: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        padding: EdgeInsets.all(8.0),
-                        child: Form(
-                          key: _formKey,
-                          child: Column(
-                            children: [
-                              TextFormField(
-                                decoration: textInputDecoration.copyWith(
-                                    labelText: 'Event'),
-                                validator: (val) =>
-                                    val.isEmpty ? 'Enter event name' : null,
-                                onChanged: (val) => _eventName = val,
-                              ),
-                              SizedBox(
-                                height: 10.0,
-                              ),
-                              Row(
-                                mainAxisSize: MainAxisSize.min,
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                children: [
-                                  Text('Split Type : '),
-                                  SizedBox(
-                                    width: 10,
-                                  ),
-                                  Expanded(
-                                    child: DropdownButtonFormField(
-                                      isExpanded: true,
-                                      items: <String>[evenly, byOrder]
-                                          .map((String value) => DropdownMenuItem(
-                                              child: Text(
-                                                  '${value[0].toUpperCase()}${value.substring(1)}')))
-                                          .toList(),
-                                      onChanged: (val) => splitType = val,
-                                      hint: Text('Please choose split type'),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              SizedBox(
-                                height: 10.0,
-                              ),
-                              RaisedButton(
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10.0)),
-                                color: Colors.blue,
-                                onPressed: () {
-                                  if (_formKey.currentState.validate()) {
-                                    // DatabaseService().addEvent(widget.group.groupId);
-                                    String eventId = Uuid().v1();
-                                    Event event = new Event(
-                                        eventId: eventId,
-                                        eventName: _eventName, transactionId: null);
-
-                                    postEvent(event, splitType);
-                                  }
-                                },
-                                child: Text('Create'),
-                              )
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                return AddEventDialog(
+                  groupId: widget.groupId,
+                  scaffoldKey: _scaffoldKey,
+                  eventListKey: _eventListKey,
                 );
               });
         },
@@ -154,21 +87,141 @@ class _GroupHomeState extends State<GroupHome> {
       ),
     );
   }
+}
 
-// TODO card with spinning animation spins while appearing and spins while disappearing
+class AddEventDialog extends StatefulWidget {
+  final String groupId;
+  final GlobalKey<ScaffoldState> scaffoldKey;
+  final GlobalKey<EventListState> eventListKey;
+
+  AddEventDialog(
+      {@required this.groupId,
+      @required this.scaffoldKey,
+      @required this.eventListKey});
+
+  @override
+  _AddEventDialogState createState() => _AddEventDialogState();
+}
+
+class _AddEventDialogState extends State<AddEventDialog> {
+  final _formKey = GlobalKey<FormState>();
+
+  bool _isLoading = false;
+
+  String _eventName = '';
+  String splitType = evenly;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        AlertDialog(
+          title: Text('Enter event name'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: EdgeInsets.all(8.0),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    children: [
+                      TextFormField(
+                        decoration:
+                            textInputDecoration.copyWith(labelText: 'Event'),
+                        validator: (val) =>
+                            val.isEmpty ? 'Enter event name' : null,
+                        onChanged: (val) => _eventName = val,
+                      ),
+                      SizedBox(
+                        height: 10.0,
+                      ),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Text('Split Type : '),
+                          SizedBox(
+                            width: 10,
+                          ),
+                          Expanded(
+                            child: DropdownButtonFormField(
+                              isExpanded: true,
+                              items: <String>[evenly, byOrder]
+                                  .map((String value) => DropdownMenuItem(
+                                      child: Text(
+                                          '${value[0].toUpperCase()}${value.substring(1)}')))
+                                  .toList(),
+                              onChanged: (val) => splitType = val,
+                              hint: Text('Please choose split type'),
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(
+                        height: 10.0,
+                      ),
+                      RaisedButton(
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10.0)),
+                        color: Colors.blue,
+                        onPressed: _isLoading
+                            ? null
+                            : () {
+                                if (_formKey.currentState.validate()) {
+                                  setState(() {
+                                    _isLoading = true;
+                                  });
+
+                                  // DatabaseService().addEvent(widget.group.groupId);
+                                  String eventId = Uuid().v1();
+                                  Event event = new Event(
+                                      eventId: eventId,
+                                      eventName: _eventName,
+                                      transactionId: null);
+                                  setState(() {
+                                    postEvent(event, splitType);
+                                  });
+                                }
+                              },
+                        child: Text('Create'),
+                      )
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        Visibility(
+            visible: _isLoading,
+            child: Container(
+              width: double.infinity,
+              height: double.infinity,
+              decoration: BoxDecoration(color: Colors.black38),
+              child: Center(
+                child: CircularProgressIndicator(),
+              ),
+            ))
+      ],
+    );
+  }
+
+  // TODO card with spinning animation spins while appearing and spins while disappearing
   void postEvent(Event event, String splitType) async {
     Response response = await EventApiService.create()
-        .addEvent(widget.group.groupId, splitType, event.toJson());
+        .addEvent(widget.groupId, splitType, event.toJson());
 
     print(response);
     if (response.statusCode != 200) {
-      showSnackbar(_scaffoldKey, 'Could not add event');
+      showSnackbar(widget.scaffoldKey, 'Could not add event');
     } else {
       Event event = Event.fromJson(response.body);
-      _eventListKey.currentState.refreshList(event);
-      showSnackbar(_scaffoldKey, 'Event Added');
+      widget.eventListKey.currentState.refreshList(event);
+      showSnackbar(widget.scaffoldKey, 'Event Added');
     }
     setState(() {
+      _isLoading = false;
       Navigator.of(context).pop();
     });
   }

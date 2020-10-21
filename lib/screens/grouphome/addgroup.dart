@@ -26,6 +26,7 @@ class AddGroup extends StatefulWidget {
 class _AddGroupState extends State<AddGroup> {
   List<UserData> _users;
   bool _loading = true;
+  bool _progressing = false;
   String _phoneNumber;
   File _image;
   Image image;
@@ -72,7 +73,7 @@ class _AddGroupState extends State<AddGroup> {
         print('User data null for $number');
     })).then((value) {
       setState(() {
-        print('Called set State _users');
+        print('Called set State _users  ');
         _loading = false;
         _users = users;
       });
@@ -99,204 +100,228 @@ class _AddGroupState extends State<AddGroup> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      key: _scaffoldKey,
-      appBar: AppBar(
-        title: Text('Add Group'),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          if (_formKey.currentState.validate()) {
-            String uid = Uuid().v1();
-            if (_image != null) {
-              StorageUploadTask storageUploadTask =
-                  reference.child("$uid.jpg").putFile(_image);
+        key: _scaffoldKey,
+        appBar: AppBar(
+          title: Text('Add Group'),
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: _progressing
+              ? null
+              : () async {
+                  if (_formKey.currentState.validate()) {
+                    setState(() {
+                      _progressing = true;
+                    });
 
-              if (storageUploadTask.isSuccessful ||
-                  storageUploadTask.isComplete) {
-                final String url = await reference.getDownloadURL();
+                    String uid = Uuid().v1();
+                    if (_image != null) {
+                      StorageUploadTask storageUploadTask =
+                          reference.child("$uid.jpg").putFile(_image);
 
-                print('User added');
-                print("The download URL is " + url);
-              } else if (storageUploadTask.isInProgress) {
-                storageUploadTask.events.listen((event) {
-                  double percentage = 100 *
-                      (event.snapshot.bytesTransferred.toDouble() /
-                          event.snapshot.totalByteCount.toDouble());
+                      if (storageUploadTask.isSuccessful ||
+                          storageUploadTask.isComplete) {
+                        final String url = await reference.getDownloadURL();
 
-                  setState(() {
-                    _loading = true;
-                  });
-                  print("THe percentage " + percentage.toString());
-                });
+                        print('User added');
+                        print("The download URL is " + url);
+                      } else if (storageUploadTask.isInProgress) {
+                        storageUploadTask.events.listen((event) {
+                          double percentage = 100 *
+                              (event.snapshot.bytesTransferred.toDouble() /
+                                  event.snapshot.totalByteCount.toDouble());
 
-                StorageTaskSnapshot storageTaskSnapshot =
-                    await storageUploadTask.onComplete;
-                final String url =
-                    await storageTaskSnapshot.ref.getDownloadURL();
+                          setState(() {
+                            _loading = true;
+                          });
+                          print("THe percentage " + percentage.toString());
+                        });
 
-                //Here you can get the download URL when the task has been completed.
-                print("Download URL " + url.toString());
+                        StorageTaskSnapshot storageTaskSnapshot =
+                            await storageUploadTask.onComplete;
+                        final String url =
+                            await storageTaskSnapshot.ref.getDownloadURL();
 
-                List<String> phoneNumbers = new List<String>();
+                        //Here you can get the download URL when the task has been completed.
+                        print("Download URL " + url.toString());
 
-                _users.forEach((user) {
-                  phoneNumbers.add(user.phoneNumber);
-                });
+                        List<String> phoneNumbers = new List<String>();
 
-                // for (UserData user in _users) {}
+                        _users.forEach((user) {
+                          phoneNumbers.add(user.phoneNumber);
+                        });
 
-                print(phoneNumbers);
+                        // for (UserData user in _users) {}
 
-                Group group = new Group(
-                    groupId: uid,
-                    groupName: groupName,
-                    groupMembers: phoneNumbers,
-                    groupIconUrl: url);
+                        print(phoneNumbers);
 
-                Response response = await GroupApiService.create()
-                    .addGroup(group.toJson())
-                    .catchError((error) => print(error));
-                if (response.statusCode == 200) {
-                  print(response.body);
-                  showSnackbar(_scaffoldKey, 'Group Added');
-                } else {
-                  showSnackbar(_scaffoldKey,
-                      'Could not add group, please try again later!!');
-                }
+                        Group group = new Group(
+                            groupId: uid,
+                            groupName: groupName,
+                            groupMembers: phoneNumbers,
+                            groupIconUrl: url);
 
-                Navigator.of(context).popUntil((route) => route.isFirst);
+                        Response response = await GroupApiService.create()
+                            .addGroup(group.toJson())
+                            .catchError((error) => print(error));
+                        if (response.statusCode == 200) {
+                          print(response.body);
+                          showSnackbar(_scaffoldKey, 'Group Added');
+                        } else {
+                          showSnackbar(_scaffoldKey,
+                              'Could not add group, please try again later!!');
+                        }
+                        setState(() {
+                          _progressing = false;
+                        });
 
-                // DatabaseService()
-                //     .addGroup(uid, groupName, _users, url)
-                //     .then((value) {
-                //   print('Group Added');
-                //   Navigator.of(context).popUntil((route) => route.isFirst);
-                // });
+                        Navigator.of(context)
+                            .popUntil((route) => route.isFirst);
 
-                print('Group Added');
-              } else {
-                //Catch any cases here that might come up like canceled, interrupted
-                print('Task not completed');
-              }
-            } else {
-              List<String> phoneNumbers = new List<String>();
+                        // DatabaseService()
+                        //     .addGroup(uid, groupName, _users, url)
+                        //     .then((value) {
+                        //   print('Group Added');
+                        //   Navigator.of(context).popUntil((route) => route.isFirst);
+                        // });
 
-              _users.forEach((user) {
-                phoneNumbers.add(user.phoneNumber);
-              });
+                        print('Group Added');
+                      } else {
+                        //Catch any cases here that might come up like canceled, interrupted
+                        print('Task not completed');
+                      }
+                    } else {
+                      List<String> phoneNumbers = new List<String>();
 
-              // for (UserData user in _users) {}
+                      _users.forEach((user) {
+                        phoneNumbers.add(user.phoneNumber);
+                      });
 
-              print(phoneNumbers);
+                      // for (UserData user in _users) {}
 
-              Group group = new Group(
-                groupId: uid,
-                groupName: groupName,
-                groupMembers: phoneNumbers,
-              );
-              Response response = await GroupApiService.create()
-                  .addGroup(group.toJson())
-                  .catchError((error) => print(error));
-              if (response.statusCode == 200) {
-                print(response.body);
-                showSnackbar(_scaffoldKey, 'Group Added');
-              } else {
-                showSnackbar(_scaffoldKey,
-                    'Could not add group, please try again later!!');
-              }
+                      print(phoneNumbers);
 
-              Navigator.of(context).pop('OK');
-            }
-          }
-        },
-        child: Icon(Icons.chevron_right),
-        tooltip: 'Next',
-      ),
-      body: _loading
-          ? Center(child: CircularProgressIndicator())
-          : Column(
-              children: [
-                Card(
-                  elevation: 10,
-                  child: Form(
-                    key: _formKey,
-                    child: Row(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: ClipOval(
-                            child: Material(
-                              color: Colors.blue, // button color
-                              child: InkWell(
-                                splashColor: Colors.red, // inkwell color
-                                child: SizedBox(
-                                    width: 45,
-                                    height: 45,
-                                    child: _image == null
-                                        ? Icon(
-                                            Icons.add_a_photo,
-                                            color: Colors.white,
-                                          )
-                                        : Image.file(_image)),
-                                onTap: () => getImage(),
-                              ),
-                            ),
-                          ),
-                        ),
-                        Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: TextFormField(
-                              onChanged: (val) => groupName = val,
-                              validator: (val) => val.isEmpty
-                                  ? 'Please enter a group name'
-                                  : null,
-                              decoration: InputDecoration(
-                                labelText: 'Group Name',
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                // Divider(
-                //   thickness: 2,
-                // ),
-                Expanded(
-                  child: GridView.count(
-                    crossAxisCount: 3,
-                    children: widget.selectedNumbers == null
-                        ? Center(child: CircularProgressIndicator())
-                        : List.generate(widget.selectedNumbers.length, (index) {
-                            return Padding(
-                              padding: const EdgeInsets.all(12.0),
-                              child: Column(
-                                children: [
-                                  CircleAvatar(
-                                    radius: 35,
-                                    // backgroundImage: Image.asset('assets/images/profile_placeholder.jpg').image,
-                                    backgroundImage: FadeInImage.assetNetwork(
-                                            placeholder:
-                                                'assets/images/profile_placeholder.jpg',
-                                            image: _users
-                                                .elementAt(index)
-                                                .getProfileUrl())
-                                        .image,
+                      Group group = new Group(
+                        groupId: uid,
+                        groupName: groupName,
+                        groupMembers: phoneNumbers,
+                      );
+                      Response response = await GroupApiService.create()
+                          .addGroup(group.toJson())
+                          .catchError((error) => print(error));
+                      if (response.statusCode == 200) {
+                        print(response.body);
+                        showSnackbar(_scaffoldKey, 'Group Added');
+                      } else {
+                        showSnackbar(_scaffoldKey,
+                            'Could not add group, please try again later!!');
+                      }
+
+                      Navigator.of(context).pop('OK');
+                    }
+                  }
+                },
+          child: Icon(Icons.chevron_right),
+          tooltip: 'Next',
+        ),
+        body: Stack(
+          children: [
+            _loading
+                ? Center(child: CircularProgressIndicator())
+                : Column(
+                    children: [
+                      Card(
+                        elevation: 10,
+                        child: Form(
+                          key: _formKey,
+                          child: Row(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: ClipOval(
+                                  child: Material(
+                                    color: Colors.blue, // button color
+                                    child: InkWell(
+                                      splashColor: Colors.red, // inkwell color
+                                      child: SizedBox(
+                                          width: 45,
+                                          height: 45,
+                                          child: _image == null
+                                              ? Icon(
+                                                  Icons.add_a_photo,
+                                                  color: Colors.white,
+                                                )
+                                              : Image.file(_image)),
+                                      onTap: () => getImage(),
+                                    ),
                                   ),
-                                  _users.elementAt(index).phoneNumber ==
-                                          _phoneNumber
-                                      ? Text('You')
-                                      : Text(_users.elementAt(index).name),
-                                ],
+                                ),
                               ),
-                            );
-                          }),
+                              Expanded(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: TextFormField(
+                                    onChanged: (val) => groupName = val,
+                                    validator: (val) => val.isEmpty
+                                        ? 'Please enter a group name'
+                                        : null,
+                                    decoration: InputDecoration(
+                                      labelText: 'Group Name',
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      // Divider(
+                      //   thickness: 2,
+                      // ),
+                      Expanded(
+                        child: GridView.count(
+                          crossAxisCount: 3,
+                          children: widget.selectedNumbers == null
+                              ? Center(child: CircularProgressIndicator())
+                              : List.generate(widget.selectedNumbers.length,
+                                  (index) {
+                                  return Padding(
+                                    padding: const EdgeInsets.all(12.0),
+                                    child: Column(
+                                      children: [
+                                        CircleAvatar(
+                                          radius: 35,
+                                          // backgroundImage: Image.asset('assets/images/profile_placeholder.jpg').image,
+                                          backgroundImage: FadeInImage.assetNetwork(
+                                                  placeholder:
+                                                      'assets/images/profile_placeholder.jpg',
+                                                  image: _users
+                                                      .elementAt(index)
+                                                      .getProfileUrl())
+                                              .image,
+                                        ),
+                                        _users.elementAt(index).phoneNumber ==
+                                                _phoneNumber
+                                            ? Text('You')
+                                            : Text(
+                                                _users.elementAt(index).name),
+                                      ],
+                                    ),
+                                  );
+                                }),
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-              ],
-            ),
-    );
+            Visibility(
+              visible: _progressing,
+              child: Container(
+                height: double.infinity,
+                width: double.infinity,
+                color: Colors.black38,
+                child: Center(child: CircularProgressIndicator()),
+              ),
+            )
+          ],
+        ));
   }
 }

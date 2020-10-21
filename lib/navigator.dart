@@ -15,7 +15,7 @@ class NavigatorPage extends StatefulWidget {
 }
 
 class _NavigatorPageState extends State<NavigatorPage> {
-  int _currentIndex = 2;
+  int _currentIndex = 0;
   PageController _pageController;
   final List<Widget> _children = [Home(), MyOrders(), Profile()];
   @override

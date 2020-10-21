@@ -8,6 +8,7 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ttmm/models/userdata.dart';
+import 'package:ttmm/navigator.dart';
 import 'package:ttmm/screens/home/home.dart';
 
 import 'package:ttmm/services/auth.dart';
@@ -192,7 +193,7 @@ class _RegisterState extends State<Register> {
                           currentPhoneNUmber, widget.user.phoneNumber);
 
                       Navigator.of(context).pushReplacement(
-                          MaterialPageRoute(builder: (context) => Home()));
+                          MaterialPageRoute(builder: (context) => NavigatorPage()));
                     } else {
                       //Catch any cases here that might come up like canceled, interrupted
                       print('Task not completed');
