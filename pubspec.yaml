@@ -24,7 +24,7 @@ dependencies:
   cloud_firestore: ^0.14.0+2
   provider: ^3.1.0
   flutter_spinkit: ^4.1.2+1
-  pin_entry_text_field: ^0.1.4
+  pin_code_fields: ^6.0.0
   image_picker: ^0.6.7+7
   firebase_storage: ^4.0.0
   shared_preferences: ^0.5.10

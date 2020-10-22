@@ -44,15 +44,22 @@ class AuthService {
   }
 
   Future logIn(String smsCode) async {
-    AuthCredential credential = PhoneAuthProvider.credential(
-        verificationId: this._verificationId, smsCode: smsCode);
-    UserCredential userCredential = await _auth.signInWithCredential(credential);
 
-     User user = userCredential.user;
-    if (user == null) {
-      print("Could not login");
-    }
-    return user;
+      AuthCredential credential = PhoneAuthProvider.credential(
+          verificationId: this._verificationId, smsCode: smsCode);
+      UserCredential userCredential =
+          await _auth.signInWithCredential(credential);
+
+      User user = userCredential.user;
+      if (user == null) {
+        print("Could not login 111");
+      }
+      return user;
+    // } catch (e) {
+    //   print('Could not login');
+    //   print(e.toString());
+    //   return null;
+    // }
   }
 
   Future signout() async {

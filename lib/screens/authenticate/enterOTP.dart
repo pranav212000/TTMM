@@ -1,8 +1,12 @@
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:pin_entry_text_field/pin_entry_text_field.dart';
+import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:ttmm/services/auth.dart';
+import 'package:ttmm/shared/constants.dart';
 import 'package:validators/validators.dart';
 
 class EnterOTP extends StatefulWidget {
@@ -14,13 +18,21 @@ class EnterOTP extends StatefulWidget {
 }
 
 class _EnterOTPState extends State<EnterOTP> {
+  var onTapRecognizer;
+
   final AuthService _authService = AuthService();
   final _scaffoldKey = GlobalKey<ScaffoldState>();
-
+  final _formKey = GlobalKey<FormState>();
   String _smsCode = '';
   bool _loading = false;
   bool _isCodeSent = false;
+  TextEditingController textEditingController = TextEditingController();
+  // ..text = "123456";
 
+  StreamController<ErrorAnimationType> errorController;
+
+  bool hasError = false;
+  String currentText = "";
   void verifyPhone() async {
     if (!_isCodeSent) {
       await _authService
@@ -39,6 +51,16 @@ class _EnterOTPState extends State<EnterOTP> {
   }
 
   @override
+  void initState() {
+    onTapRecognizer = TapGestureRecognizer()
+      ..onTap = () {
+        Navigator.pop(context);
+      };
+    errorController = StreamController<ErrorAnimationType>();
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     WidgetsBinding.instance.addPostFrameCallback((_) => verifyPhone());
 
@@ -53,12 +75,73 @@ class _EnterOTPState extends State<EnterOTP> {
             style: TextStyle(),
             textAlign: TextAlign.center,
           ),
-          PinEntryTextField(
-            onSubmit: (val) => _smsCode = val,
-            fields: 6,
-          ),
           SizedBox(
             height: 30.0,
+          ),
+          Form(
+            key: _formKey,
+            child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(vertical: 8.0, horizontal: 30),
+                child: PinCodeTextField(
+                  appContext: context,
+                  // pastedTextStyle: TextStyle(
+                  //   color: Colors.green.shade600,
+                  //   fontWeight: FontWeight.bold,
+                  // ),
+                  length: 6,
+                  obscureText: false,
+                  obscuringCharacter: '*',
+                  animationType: AnimationType.fade,
+                  // validator: (v) {
+                  //   if (v.length != 3) {
+                  //     return "PLease enter valid OTP";
+                  //   } else {
+                  //     return null;
+                  //   }
+                  // },
+                  // pinTheme: PinTheme(
+                  //   shape: PinCodeFieldShape.box,
+                  //   borderRadius: BorderRadius.circular(5),
+                  //   fieldHeight: 60,
+                  //   fieldWidth: 50,
+                  //   activeFillColor: hasError ? Colors.orange : Colors.white,
+                  // ),
+                  cursorColor: Colors.black,
+                  animationDuration: Duration(milliseconds: 300),
+                  textStyle: TextStyle(fontSize: 20, height: 1.6),
+                  backgroundColor: Colors.transparent,
+                  // enableActiveFill: true,
+                  errorAnimationController: errorController,
+                  controller: textEditingController,
+                  keyboardType: TextInputType.number,
+                  // boxShadows: [
+                  //   BoxShadow(
+                  //     offset: Offset(0, 1),
+                  //     color: Colors.black12,
+                  //     blurRadius: 10,
+                  //   )
+                  // ],
+                  onCompleted: (val) {
+                    _smsCode = val;
+                  },
+                  // onTap: () {
+                  //   print("Pressed");
+                  // },
+                  // onChanged: (value) {
+                  //   print(value);
+                  //   setState(() {
+                  //     currentText = value;
+                  //   });
+                  // },
+                  beforeTextPaste: (text) {
+                    print("Allowing to paste $text");
+                    //if you return true then it will show the paste confirmation dialog. Otherwise if false, then nothing will happen.
+                    //but you can show anything you want here, like your pop up saying wrong paste format or etc
+                    return true;
+                  },
+                  onChanged: (String value) {},
+                )),
           ),
           RaisedButton(
               color: _isCodeSent ? Colors.white : Colors.green,
@@ -67,14 +150,21 @@ class _EnterOTPState extends State<EnterOTP> {
                 style: TextStyle(color: Colors.amber),
               ),
               onPressed: () async {
-                if (isNumeric(_smsCode)) {
-                  User user = await _authService
-                      .logIn(_smsCode)
-                      .whenComplete(() => setState(() => _loading = true));
-                  if (user != null) {
-                    Navigator.of(context).pop();
-                  } else
-                    print("Enter valid otp");
+                if (_formKey.currentState.validate()) {
+                  if (isNumeric(_smsCode)) {
+                    User user = await _authService
+                        .logIn(_smsCode)
+                        .whenComplete(() => setState(() => _loading = true));
+                    if (user != null) {
+                      Navigator.of(context).pop();
+                    } else {
+                      setState(() {
+                        _loading = false;
+                      });
+
+                      showSnackbar(_scaffoldKey, "Enter Valid OTP");
+                    }
+                  }
                 }
               }),
           SizedBox(height: 30.0),
