@@ -8,6 +8,7 @@ import 'package:ttmm/screens/grouphome/event_list.dart';
 import 'package:ttmm/services/database.dart';
 import 'package:ttmm/services/event_api_service.dart';
 import 'package:ttmm/shared/constants.dart';
+import 'package:vector_math/vector_math.dart' as math;
 import 'package:ttmm/shared/loading.dart';
 import 'package:uuid/uuid.dart';
 
@@ -67,15 +68,36 @@ class _GroupHomeState extends State<GroupHome> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          showDialog(
-              context: _scaffoldKey.currentContext,
-              builder: (BuildContext context) {
-                return AddEventDialog(
-                  groupId: widget.group.groupId,
-                  scaffoldKey: _scaffoldKey,
-                  eventListKey: _eventListKey,
+          showGeneralDialog(
+              context: context,
+              pageBuilder: (context, anim1, anim2) {},
+              barrierDismissible: true,
+              barrierColor: Colors.black.withOpacity(0.4),
+              barrierLabel: '',
+              transitionBuilder: (context, anim1, anim2, child) {
+                return Transform.rotate(
+                  angle: math.radians(anim1.value * 360),
+                  child: Opacity(
+                    opacity: anim1.value,
+                    child: AddEventDialog(
+                      groupId: widget.group.groupId,
+                      scaffoldKey: _scaffoldKey,
+                      eventListKey: _eventListKey,
+                    ),
+                  ),
                 );
-              });
+              },
+              transitionDuration: Duration(milliseconds: 300));
+
+          // showDialog(
+          //     context: _scaffoldKey.currentContext,
+          //     builder: (BuildContext context) {
+          //       return AddEventDialog(
+          //         groupId: widget.group.groupId,
+          //         scaffoldKey: _scaffoldKey,
+          //         eventListKey: _eventListKey,
+          //       );
+          //     });
         },
         label: Text('Event'),
         icon: Icon(Icons.add),
