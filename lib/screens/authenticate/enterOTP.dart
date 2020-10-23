@@ -107,10 +107,11 @@ class _EnterOTPState extends State<EnterOTP> {
                   //   fieldWidth: 50,
                   //   activeFillColor: hasError ? Colors.orange : Colors.white,
                   // ),
-                  cursorColor: Colors.black,
+                  cursorColor: Colors.white,
                   animationDuration: Duration(milliseconds: 300),
                   textStyle: TextStyle(fontSize: 20, height: 1.6),
                   backgroundColor: Colors.transparent,
+
                   // enableActiveFill: true,
                   errorAnimationController: errorController,
                   controller: textEditingController,
@@ -143,30 +144,33 @@ class _EnterOTPState extends State<EnterOTP> {
                   onChanged: (String value) {},
                 )),
           ),
-          RaisedButton(
-              color: _isCodeSent ? Colors.white : Colors.green,
-              child: Text(
-                'Submit OTP',
-                style: TextStyle(color: Colors.amber),
-              ),
-              onPressed: () async {
-                if (_formKey.currentState.validate()) {
-                  if (isNumeric(_smsCode)) {
-                    User user = await _authService
-                        .logIn(_smsCode)
-                        .whenComplete(() => setState(() => _loading = true));
-                    if (user != null) {
-                      Navigator.of(context).pop();
-                    } else {
-                      setState(() {
-                        _loading = false;
-                      });
+          Container(
+            margin: EdgeInsets.only(top: 30),
+            child: RaisedButton(
+                color: _isCodeSent ? Colors.orange : Colors.grey,
+                child: Text(
+                  'Submit OTP',
+                  // style: TextStyle(color: Colors.amber),
+                ),
+                onPressed: () async {
+                  if (_formKey.currentState.validate()) {
+                    if (isNumeric(_smsCode)) {
+                      User user = await _authService
+                          .logIn(_smsCode)
+                          .whenComplete(() => setState(() => _loading = true));
+                      if (user != null) {
+                        Navigator.of(context).pop();
+                      } else {
+                        setState(() {
+                          _loading = false;
+                        });
 
-                      showSnackbar(_scaffoldKey, "Enter Valid OTP");
+                        showSnackbar(_scaffoldKey, "Enter Valid OTP");
+                      }
                     }
                   }
-                }
-              }),
+                }),
+          ),
           SizedBox(height: 30.0),
           Visibility(
             child: SpinKitCubeGrid(

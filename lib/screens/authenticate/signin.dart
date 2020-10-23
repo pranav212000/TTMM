@@ -27,24 +27,20 @@ class SignIn extends StatelessWidget {
         body: Container(
             height: double.infinity,
             width: double.infinity,
-            // decoration: BoxDecoration(
-            //   image: DecorationImage(
-            //       fit: BoxFit.cover,
-            //       image: AssetImage('assets/images/back.png')),
-            // ),
             child: Form(
                 key: _formKey,
                 child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
                       Container(
-                          margin: EdgeInsets.only(top: 200),
+                          margin: EdgeInsets.only(bottom: 200, top: 70),
                           child: Text("TTMM")),
                       Container(
                         margin: EdgeInsets.only(left: 50, right: 50),
                         child: Theme(
                           data: Theme.of(context).copyWith(
-                            primaryColor: Colors.white,
+                            primaryColor: Colors.orange,
+                            accentColor: Colors.orange
                           ),
                           child: TextFormField(
                             style: TextStyle(color: Colors.white),
@@ -55,11 +51,12 @@ class SignIn extends StatelessWidget {
                               enabled: true,
                               hintText: "Phone Number",
                               labelText: 'Phone Number',
+                              hintStyle: TextStyle(color: Colors.grey[700]),
                               enabledBorder: UnderlineInputBorder(
                                 borderSide: BorderSide(color: Colors.white),
                               ),
                               focusedBorder: UnderlineInputBorder(
-                                borderSide: BorderSide(color: Colors.white),
+                                borderSide: BorderSide(color: Colors.orange),
                               ),
                             ),
                             validator: (val) {
@@ -88,16 +85,19 @@ class SignIn extends StatelessWidget {
                       //             color: Colors.black,
                       //           ),
                       //           onPressed: null)
-                      RaisedButton(
-                        onPressed: () {
-                          if (_formKey.currentState.validate()) {
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => EnterOTP(_phone)));
-                          }
-                        },
-                        child: Text("Verify"),
+                      Container(
+                        margin: EdgeInsets.only(top: 50),
+                        child: RaisedButton(
+                          onPressed: () {
+                            if (_formKey.currentState.validate()) {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => EnterOTP(_phone)));
+                            }
+                          },
+                          child: Text("Verify"),
+                        ),
                       ),
                     ]))));
 

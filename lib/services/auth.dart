@@ -43,8 +43,8 @@ class AuthService {
     }
   }
 
-  Future logIn(String smsCode) async {
-
+  Future logIn(GlobalKey<ScaffoldState> _scaffoldKey, String smsCode) async {
+    try {
       AuthCredential credential = PhoneAuthProvider.credential(
           verificationId: this._verificationId, smsCode: smsCode);
       UserCredential userCredential =
@@ -55,6 +55,10 @@ class AuthService {
         print("Could not login 111");
       }
       return user;
+    } catch (e) {
+      _scaffoldKey.currentState
+          .showSnackBar(SnackBar(content: Text(e.message)));
+    }
     // } catch (e) {
     //   print('Could not login');
     //   print(e.toString());

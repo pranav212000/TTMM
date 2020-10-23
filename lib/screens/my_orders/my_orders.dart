@@ -34,7 +34,7 @@ class _MyOrdersState extends State<MyOrders> {
               child: CircularProgressIndicator(),
             );
           } else {
-            return snapshot.data.length == 0
+            return snapshot.data == null || snapshot.data.length == 0
                 ? Center(child: Text('No orders yet'))
                 : ListView.builder(
                     itemCount: snapshot.data.length,

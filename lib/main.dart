@@ -45,13 +45,15 @@ class App extends StatelessWidget {
             child: MaterialApp(
               theme: ThemeData(
                 brightness: Brightness.dark,
+                primarySwatch: Colors.orange,
                 primaryTextTheme: GoogleFonts.ralewayTextTheme(
                     Theme.of(context).primaryTextTheme),
-                textTheme:
-                    GoogleFonts.ralewayTextTheme(Theme.of(context).textTheme),
-                primarySwatch: Colors.blue,
+                textTheme: GoogleFonts.ralewayTextTheme(Theme.of(context)
+                    .textTheme
+                    .apply(
+                        bodyColor: Colors.white, displayColor: Colors.white)),
                 iconTheme: IconThemeData(
-                  color: Colors.blue,
+                  color: Colors.orange,
                 ),
               ),
               // TODO change home

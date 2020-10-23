@@ -51,59 +51,58 @@ class _RegisterState extends State<Register> {
     return Scaffold(
       key: _scaffoldKey,
       resizeToAvoidBottomInset: true,
-      // appBar: AppBar(
-      //   title: Text('Register'),
-      //   actions: <Widget>[
-      //     FlatButton.icon(
-      //         onPressed: () {
-      //           // showSnackbar(_scaffoldKey, 'Signing out');
-      //           AuthService().signout();
-      //         },
-      //         icon: Icon(
-      //           Icons.exit_to_app,
-      //           color: Colors.white,
-      //         ),
-      //         label: Text(
-      //           'Signout',
-      //           style: TextStyle(color: Colors.white),
-      //         ))
-      //   ],
-      // ),
-      body: Container(
-        height: double.infinity,
-        width: double.infinity,
-        decoration: BoxDecoration(
-          image: DecorationImage(
-              fit: BoxFit.cover, image: AssetImage('assets/images/back.png')),
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        title: Padding(
+          padding: const EdgeInsets.only(left: 8.0),
+          child: Text(
+            'Register',
+          ),
         ),
-        child: Form(
-            key: _formKey,
+        actions: <Widget>[
+          FlatButton.icon(
+              onPressed: () {
+                AuthService()
+                    .signout()
+                    .then((value) => showSnackbar(_scaffoldKey, 'Signing out'));
+              },
+              icon: Icon(
+                Icons.exit_to_app,
+              ),
+              label: Text(
+                'Signout',
+              ))
+        ],
+      ),
+      body: Form(
+          key: _formKey,
+          child: SingleChildScrollView(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.start,
               children: <Widget>[
                 Container(
-                  margin: EdgeInsets.only(top: 180),
+                  margin: EdgeInsets.only(top: 160),
                   child: FlatButton(
                       onPressed: () => getImage(),
                       child: _image == null
                           ? Container(
-                              height: 120,
-                              width: 120,
+                              height: 140,
+                              width: 140,
                               decoration: BoxDecoration(
                                 border:
                                     Border.all(color: Colors.white, width: 5),
                                 borderRadius:
-                                    BorderRadius.all(Radius.circular(120)),
+                                    BorderRadius.all(Radius.circular(140)),
                               ),
                               child: Icon(
                                 Icons.add_a_photo,
                                 color: Colors.white,
-                                size: 60,
+                                size: 70,
                               ),
                             )
                           : CircleAvatar(
                               backgroundColor: Colors.transparent,
-                              radius: 70,
+                              radius: 80,
                               backgroundImage: Image.file(_image).image,
                             )),
                 ),
@@ -111,20 +110,23 @@ class _RegisterState extends State<Register> {
                   margin: EdgeInsets.only(left: 50, right: 50, top: 40),
                   child: Theme(
                     data: Theme.of(context).copyWith(
-                      primaryColor: Colors.white,
+                      primaryColor: Colors.orange,
+                      accentColor: Colors.orange,
                     ),
                     child: TextFormField(
+                      style: TextStyle(color: Colors.white),
                       decoration: InputDecoration(
                         prefixIcon: Icon(
                           Icons.person,
                         ),
                         enabled: true,
                         hintText: 'Name',
+                        hintStyle: TextStyle(color: Colors.grey[700]),
                         enabledBorder: UnderlineInputBorder(
                           borderSide: BorderSide(color: Colors.white),
                         ),
                         focusedBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: Colors.white),
+                          borderSide: BorderSide(color: Colors.orange),
                         ),
                       ),
                       onChanged: (val) => _name = val,
@@ -138,116 +140,123 @@ class _RegisterState extends State<Register> {
                   padding: EdgeInsets.only(top: 10),
                   child: Theme(
                     data: Theme.of(context).copyWith(
-                      primaryColor: Colors.white,
+                      primaryColor: Colors.orange,
+                      accentColor: Colors.orange,
                     ),
                     child: TextFormField(
+                      style: TextStyle(color: Colors.white),
                       decoration: InputDecoration(
                         prefixIcon: Icon(
                           Icons.payment,
                         ),
                         enabled: true,
                         hintText: 'UPI ID',
+                        hintStyle: TextStyle(color: Colors.grey[700]),
                         enabledBorder: UnderlineInputBorder(
                           borderSide: BorderSide(color: Colors.white),
                         ),
                         focusedBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: Colors.white),
+                          borderSide: BorderSide(color: Colors.orange),
                         ),
                       ),
                       onChanged: (val) => _upi = val,
                     ),
                   ),
                 ),
-                RaisedButton(
-                  onPressed: () async {
-                    if (_formKey.currentState.validate() && _image != null) {
-                      StorageUploadTask storageUploadTask = reference
-                          .child("${widget.user.uid}.jpg")
-                          .putFile(_image);
+                Container(
+                  margin: EdgeInsets.only(top: 50),
+                  child: RaisedButton(
+                    onPressed: () async {
+                      if (_formKey.currentState.validate() && _image != null) {
+                        StorageUploadTask storageUploadTask = reference
+                            .child("${widget.user.uid}.jpg")
+                            .putFile(_image);
 
-                      if (storageUploadTask.isSuccessful ||
-                          storageUploadTask.isComplete) {
-                        final String url = await reference.getDownloadURL();
+                        if (storageUploadTask.isSuccessful ||
+                            storageUploadTask.isComplete) {
+                          final String url = await reference.getDownloadURL();
 
-                        print('User added');
-                        Navigator.pop(context);
+                          print('User added');
+                          Navigator.pop(context);
 
-                        print("The download URL is " + url);
-                      } else if (storageUploadTask.isInProgress) {
-                        storageUploadTask.events.listen((event) {
-                          double percentage = 100 *
-                              (event.snapshot.bytesTransferred.toDouble() /
-                                  event.snapshot.totalByteCount.toDouble());
+                          print("The download URL is " + url);
+                        } else if (storageUploadTask.isInProgress) {
+                          storageUploadTask.events.listen((event) {
+                            double percentage = 100 *
+                                (event.snapshot.bytesTransferred.toDouble() /
+                                    event.snapshot.totalByteCount.toDouble());
 
-                          setState(() {
-                            _loading = true;
+                            setState(() {
+                              _loading = true;
+                            });
+                            print("THe percentage " + percentage.toString());
                           });
-                          print("THe percentage " + percentage.toString());
-                        });
 
-                        StorageTaskSnapshot storageTaskSnapshot =
-                            await storageUploadTask.onComplete;
-                        final String url =
-                            await storageTaskSnapshot.ref.getDownloadURL();
+                          StorageTaskSnapshot storageTaskSnapshot =
+                              await storageUploadTask.onComplete;
+                          final String url =
+                              await storageTaskSnapshot.ref.getDownloadURL();
 
-                        //Here you can get the download URL when the task has been completed.
-                        print("Download URL " + url.toString());
+                          //Here you can get the download URL when the task has been completed.
+                          print("Download URL " + url.toString());
 
-                        UserData userData = new UserData(
-                            uid: widget.user.uid,
-                            phoneNumber: widget.user.phoneNumber,
-                            name: _name,
-                            groups: [],
-                            upiId: _upi,
-                            profileUrl: url);
+                          UserData userData = new UserData(
+                              uid: widget.user.uid,
+                              phoneNumber: widget.user.phoneNumber,
+                              name: _name,
+                              groups: [],
+                              upiId: _upi,
+                              profileUrl: url);
 
-                        print('SENDING THIS : ');
-                        print(json.encode(userData));
+                          print('SENDING THIS : ');
+                          print(json.encode(userData));
 
-                        await UserApiService.create()
-                            .addUser(userData.toJson())
-                            .then((response) => print(response))
-                            .catchError((err) => print(err))
-                            .whenComplete(() => Navigator.of(context).pop());
+                          await UserApiService.create()
+                              .addUser(userData.toJson())
+                              .then((response) => print(response))
+                              .catchError((err) => print(err))
+                              .whenComplete(() => Navigator.of(context).pop());
 
-                        // DatabaseService(phoneNumber: widget.user.phoneNumber)
-                        //     .updateUserData(
-                        //         widget.user.uid,
-                        //         widget.user.phoneNumber,
-                        //         _name,
-                        //         url,
-                        //         List<String>());
+                          // DatabaseService(phoneNumber: widget.user.phoneNumber)
+                          //     .updateUserData(
+                          //         widget.user.uid,
+                          //         widget.user.phoneNumber,
+                          //         _name,
+                          //         url,
+                          //         List<String>());
 
-                        SharedPreferences preferences =
-                            await SharedPreferences.getInstance();
-                        preferences.setString(currentUser, widget.user.uid);
-                        preferences.setString(
-                            currentPhoneNUmber, widget.user.phoneNumber);
+                          SharedPreferences preferences =
+                              await SharedPreferences.getInstance();
+                          preferences.setString(currentUser, widget.user.uid);
+                          preferences.setString(
+                              currentPhoneNUmber, widget.user.phoneNumber);
 
-                        Navigator.of(context).pushReplacement(MaterialPageRoute(
-                            builder: (context) => NavigatorPage()));
-                      } else {
-                        //Catch any cases here that might come up like canceled, interrupted
-                        print('Task not completed');
+                          Navigator.of(context).pushReplacement(
+                              MaterialPageRoute(
+                                  builder: (context) => NavigatorPage()));
+                        } else {
+                          //Catch any cases here that might come up like canceled, interrupted
+                          print('Task not completed');
+                        }
+                      } else if (_image == null) {
+                        _scaffoldKey.currentState.showSnackBar(SnackBar(
+                          content: Text('Please select a profile pic'),
+                        ));
                       }
-                    } else if (_image == null) {
-                      _scaffoldKey.currentState.showSnackBar(SnackBar(
-                        content: Text('Please select a profile pic'),
-                      ));
-                    }
-                  },
-                  child: Text('Submit'),
-                  color: Colors.tealAccent,
+                    },
+                    child: Text('Submit'),
+                    // color: Colors.tealAccent,
+                  ),
                 ),
                 Visibility(
                   visible: _loading,
                   child: SpinKitRing(
-                    color: Colors.green,
+                    color: Colors.orange,
                   ),
                 )
               ],
-            )),
-      ),
+            ),
+          )),
     );
   }
 }
