@@ -3,7 +3,7 @@ import 'package:ttmm/shared/hex_color.dart';
 import 'package:ttmm/shared/navigation_item.dart';
 
 class BottomNavBar extends StatelessWidget {
-  int currentIndex = 0;
+  int currentIndex = 1;
   Function onTapped;
   List<NavigationItem> items;
   BottomNavBar({this.currentIndex, this.onTapped, this.items});
@@ -12,9 +12,9 @@ class BottomNavBar extends StatelessWidget {
     return Container(
       height: 56,
       decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).primaryColor,
           boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4)]),
-      padding: EdgeInsets.fromLTRB(8, 4, 8, 4),
+      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       width: MediaQuery.of(context).size.width,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -35,39 +35,42 @@ class BottomNavBar extends StatelessWidget {
 
 int index = 0;
 
-Color backgroundColor = Colors.white;
-
 Widget _buildItem(NavigationItem item, bool isSelected) {
   return AnimatedContainer(
     duration: Duration(milliseconds: 250),
     width: isSelected ? 125 : 50,
     height: double.maxFinite,
-    padding: isSelected ? EdgeInsets.symmetric(horizontal: 16) : null,
+    padding: isSelected ? EdgeInsets.symmetric(horizontal: 10) : null,
     decoration: isSelected
         ? BoxDecoration(
-            color: item.color,
+            color: item.selectedBackgroundColor,
             borderRadius: BorderRadius.all(Radius.circular(50)))
         : null,
-    child: ListView(scrollDirection: Axis.horizontal, children: [
-      Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          IconTheme(
-              data: IconThemeData(
-                  size: 24, color: isSelected ? backgroundColor : Colors.black),
-              child: item.icon),
-          isSelected
-              ? Padding(
-                  padding: const EdgeInsets.only(left: 8.0),
-                  child: isSelected
-                      ? DefaultTextStyle(
-                          style: TextStyle(color: backgroundColor),
-                          child: item.title)
-                      : Container(),
-                )
-              : Container()
-        ],
-      ),
-    ]),
+    child: Center(
+      child: ListView(
+          scrollDirection: Axis.horizontal,
+          shrinkWrap: true,
+          children: [
+            IconTheme(
+                data: IconThemeData(
+                    size: 24,
+                    color: isSelected
+                        ? item.selectedColor
+                        : item.defaultIconColor),
+                child: item.icon),
+            isSelected
+                ? Center(
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 8.0),
+                      child: isSelected
+                          ? DefaultTextStyle(
+                              style: TextStyle(color: item.selectedColor),
+                              child: item.title)
+                          : Container(),
+                    ),
+                  )
+                : Container()
+          ]),
+    ),
   );
 }

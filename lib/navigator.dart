@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ttmm/screens/profile/profile.dart';
 import 'package:ttmm/shared/bottom_navigation_bar.dart';
@@ -16,7 +17,6 @@ class NavigatorPage extends StatefulWidget {
 
 class _NavigatorPageState extends State<NavigatorPage> {
   int _currentIndex = 0;
-  PageController _pageController;
   final List<Widget> _children = [Home(), MyOrders(), Profile()];
   @override
   Widget build(BuildContext context) {
@@ -44,17 +44,29 @@ class _NavigatorPageState extends State<NavigatorPage> {
         onTapped: onTabTapped,
         items: [
           NavigationItem(
-              icon: Icon(Icons.home),
-              title: Text('Home'),
-              color: Colors.deepPurpleAccent),
+              icon: Icon(
+                Icons.home,
+              ),
+              title: Text('Home', style: GoogleFonts.raleway()),
+              selectedColor: Colors.white,
+              defaultIconColor: Colors.deepPurpleAccent,
+              selectedBackgroundColor: Colors.deepPurpleAccent),
           NavigationItem(
-              icon: Icon(Icons.restaurant_menu),
-              title: Text('My Orders'),
-              color: HexColor('39393A')),
+            icon: Icon(
+              Icons.restaurant_menu,
+            ),
+            title: Text('My Orders', style: GoogleFonts.raleway()),
+            selectedColor: Colors.black,
+            defaultIconColor: HexColor('#37ff8b'),
+            selectedBackgroundColor: HexColor('#37ff8b'),
+            // color: HexColor('#00fddc')),
+          ),
           NavigationItem(
               icon: Icon(Icons.person),
-              title: Text('Me'),
-              color: HexColor('FF6978')),
+              title: Text('Me', style: GoogleFonts.raleway()),
+              selectedColor: Colors.white,
+              defaultIconColor: HexColor('FF6978'),
+              selectedBackgroundColor: HexColor('FF6978')),
         ],
       ),
     );

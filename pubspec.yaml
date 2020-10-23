@@ -46,6 +46,7 @@ dependencies:
   curved_navigation_bar: ^0.3.4
   flutter_slidable: ^0.5.7
   solid_bottom_sheet: ^0.1.9
+  google_fonts: ^1.1.1
 
 dev_dependencies:
   flutter_test:
@@ -83,8 +84,12 @@ flutter:
   # list giving the asset and other descriptors for the font. For
   # example:
   # fonts:
-  #   - family: Schyler
+  #   - family: Raleway
   #     fonts:
+  #         - asset: fonts/Raleway/Raleway-Black.ttf
+  #         - asset: fonts/Raleway/Raleway-BlackItalic.ttf
+  #           style: italic
+
   #       - asset: fonts/Schyler-Regular.ttf
   #       - asset: fonts/Schyler-Italic.ttf
   #         style: italic
