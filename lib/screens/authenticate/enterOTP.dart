@@ -156,7 +156,7 @@ class _EnterOTPState extends State<EnterOTP> {
                   if (_formKey.currentState.validate()) {
                     if (isNumeric(_smsCode)) {
                       User user = await _authService
-                          .logIn(_smsCode)
+                          .logIn(_scaffoldKey, _smsCode)
                           .whenComplete(() => setState(() => _loading = true));
                       if (user != null) {
                         Navigator.of(context).pop();
