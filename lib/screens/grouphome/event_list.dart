@@ -74,9 +74,13 @@ class EventListState extends State<EventList> {
                 Event event = _events.elementAt(index);
                 String lastActivity = formatDate(event.updatedAt);
                 return Card(
+                  margin: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   child: ListTile(
-                    title: Text(event.eventName),
-                    subtitle: Text("Last activity : $lastActivity"),
+                    title: Text(event.eventName, style: TextStyle(fontSize: 16)),
+                    subtitle: Text(
+                      "Last activity : $lastActivity",
+                      style: TextStyle(fontSize: 12),
+                    ),
                     onTap: () => Navigator.of(context).push(MaterialPageRoute(
                         builder: (_) => EventHome(
                               event: event,

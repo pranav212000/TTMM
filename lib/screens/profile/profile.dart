@@ -34,7 +34,6 @@ class _ProfileState extends State<Profile>
   @override
   bool get wantKeepAlive => true;
 
-// TODO make tab layout center -> profile left -> toGet, right->toGiveOrGetToGiveOrGet
 
   @override
   Widget build(BuildContext context) {

@@ -192,7 +192,6 @@ class _HomeState extends State<Home> with AutomaticKeepAliveClientMixin<Home> {
                       groupIds: snapshot.data.groups,
                     ),
 
-// TODO add bottom navigation bar
               // bottomNavigationBar: CurvedNavigationBar(items: null),
             );
           else

@@ -20,6 +20,7 @@ class OrderList extends StatefulWidget {
 class OrderListState extends State<OrderList> {
   List<Order> _orders = new List<Order>();
   Future _future;
+  bool _isLoading = false;
   final SlidableController slidableController = SlidableController();
 
   final GlobalKey<AnimatedListState> listKey = GlobalKey<AnimatedListState>();
@@ -104,40 +105,60 @@ class OrderListState extends State<OrderList> {
         actions: [
           IconSlideAction(
               caption: 'Delete',
-              color: Colors.red,
+              color: Colors.redAccent,
               icon: Icons.delete,
-              onTap: () {
-                showDialog(
-                  context: context,
-                  builder: (context) {
-                    return AlertDialog(
-                      title: Text('Confirm'),
-                      content: Text(
-                          'Are you sure you want to delete ${order.itemName}'),
-                      actions: [
-                        FlatButton(
-                            onPressed: () {
-                              deleteOrder(order.orderId);
-                              setState(() {});
-                            },
-                            child: Text('Yes')),
-                        FlatButton(
-                            onPressed: () {
-                              setState(() {
-                                Navigator.of(context).pop();
-                              });
-                            },
-                            child: Text('No'))
-                      ],
-                    );
-                  },
-                );
-              }),
+              onTap: _isLoading
+                  ? null
+                  : () {
+                    // TODO circular progress indicator visibility fix
+                      showDialog(
+                        context: context,
+                        builder: (context) {
+                          return Stack(children: [
+                            AlertDialog(
+                              title: Text('Confirm'),
+                              content: Text(
+                                  'Are you sure you want to delete ${order.itemName}'),
+                              actions: [
+                                FlatButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        _isLoading = true;
+                                      });
+                                      deleteOrder(order.orderId);
+                                      setState(() {});
+                                    },
+                                    child: Text('Yes')),
+                                FlatButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        _isLoading = false;
+                                        Navigator.of(context).pop();
+                                      });
+                                    },
+                                    child: Text('No'))
+                              ],
+                            ),
+                            Visibility(
+                                visible: _isLoading,
+                                child: Container(
+                                  width: double.infinity,
+                                  height: double.infinity,
+                                  decoration:
+                                      BoxDecoration(color: Colors.black38),
+                                  child: Center(
+                                    child: CircularProgressIndicator(),
+                                  ),
+                                ))
+                          ]);
+                        },
+                      );
+                    }),
         ],
         secondaryActions: [
           IconSlideAction(
             caption: 'Edit',
-            color: Colors.amber,
+            color: Colors.blueAccent,
             icon: Icons.edit,
             onTap: () =>
                 updateOrder(order, order.itemName, order.quantity, order.cost),
@@ -165,8 +186,10 @@ class OrderListState extends State<OrderList> {
                           children: [
                             TextFormField(
                               initialValue: item,
-                              decoration: textInputDecoration.copyWith(
-                                  labelText: 'Order'),
+                              decoration: InputDecoration(
+                                  labelText: 'Order',
+                                  hintText: 'Order',
+                                  hintStyle: HINT_STYLE),
                               validator: (val) =>
                                   val.isEmpty ? 'Enter order name' : null,
                               onChanged: (val) => item = val,
@@ -176,8 +199,10 @@ class OrderListState extends State<OrderList> {
                             ),
                             TextFormField(
                               initialValue: quantity.toString(),
-                              decoration: textInputDecoration.copyWith(
-                                  labelText: 'Quantity'),
+                              decoration: InputDecoration(
+                                  labelText: 'Quantity',
+                                  hintText: 'Quantity',
+                                  hintStyle: HINT_STYLE),
                               validator: (val) => val.isEmpty
                                   ? 'Enter quantity'
                                   : (!isNumeric(val) ? 'Enter a number' : null),
@@ -193,11 +218,15 @@ class OrderListState extends State<OrderList> {
                             ),
                             TextFormField(
                               initialValue: cost.toString(),
-                              decoration: textInputDecoration.copyWith(
-                                  labelText: 'Cost'),
+                              decoration: InputDecoration(
+                                  labelText: 'Cost',
+                                  hintText: 'Cost',
+                                  hintStyle: HINT_STYLE),
                               validator: (val) => val.isEmpty
                                   ? 'Enter cost'
-                                  : !isNumeric(val) ? 'Enter a number' : null,
+                                  : !isNumeric(val)
+                                      ? 'Enter a number'
+                                      : null,
                               onChanged: (val) {
                                 if (isNumeric(val))
                                   setState(() {
@@ -218,7 +247,7 @@ class OrderListState extends State<OrderList> {
                             RaisedButton(
                               shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(10.0)),
-                              color: Colors.blue,
+                              color: Colors.orange,
                               onPressed: () {
                                 if (_formKey.currentState.validate()) {
                                   postUpdate(order, item, quantity, cost);
@@ -282,10 +311,12 @@ class OrderListState extends State<OrderList> {
           _buildItem(removedItem, animation);
         });
 
+        _isLoading = false;
         Scaffold.of(context)
             .showSnackBar(SnackBar(content: Text('Order deleted')));
       });
     } else {
+      _isLoading = false;
       Scaffold.of(context)
           .showSnackBar(SnackBar(content: Text('Could not delete order')));
     }

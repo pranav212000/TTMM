@@ -2,14 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ttmm/shared/hex_color.dart';
 
-const textInputDecoration = InputDecoration(
-    hoverColor: Colors.cyan,
-    // enabledBorder: OutlineInputBorder(
-    //     borderSide: BorderSide(color: Colors.amber, width: 2.0)),
-    // focusedBorder: OutlineInputBorder(
-    //     borderSide: BorderSide(color: Colors.deepPurple, width: 2.0,)),
 
-    labelStyle: TextStyle(color: Colors.deepPurple));
 
 void showSnackbar(GlobalKey<ScaffoldState> _scaffoldKey, String text,
     {Color color}) {
@@ -89,3 +82,4 @@ const String amount = 'amount';
 const String cash = 'cash';
 const String upi = 'upi';
 const String to = 'to';
+final TextStyle HINT_STYLE = TextStyle(color: Colors.grey[700]);

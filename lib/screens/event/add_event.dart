@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ttmm/shared/constants.dart';
+import 'package:ttmm/shared/hex_color.dart';
 
 class AddEvent extends StatelessWidget {
   @override
@@ -13,12 +14,15 @@ class AddEvent extends StatelessWidget {
           children: [
             Card(
               child: TextFormField(
-                decoration:
-                    textInputDecoration.copyWith(labelText: 'Event Name'),
+                decoration: InputDecoration(
+                    labelText: 'Event Name',
+                    hintText: 'Event Name',
+                    hintStyle: HINT_STYLE),
               ),
-
             ),
-            Card(child: Text('data'),)
+            Card(
+              child: Text('data'),
+            )
           ],
         ),
       ),

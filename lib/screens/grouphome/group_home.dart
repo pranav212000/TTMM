@@ -28,7 +28,7 @@ class _GroupHomeState extends State<GroupHome> {
 
   // String _eventName = '';
   String splitType = evenly;
-
+// TODO cache all possible things in floor!
   @override
   Widget build(BuildContext context) {
     // print(ModalRoute.of(context).settings.name);
@@ -39,14 +39,11 @@ class _GroupHomeState extends State<GroupHome> {
         title: Row(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            Padding(
-              padding: const EdgeInsets.all(0.0),
-              child: CircleAvatar(
-                radius: 20,
-                backgroundImage: widget.group.groupIconUrl == null
-                    ? Image.asset('assets/images/group_image.png').image
-                    : Image.network(widget.group.groupIconUrl).image,
-              ),
+            CircleAvatar(
+              radius: 16,
+              backgroundImage: widget.group.groupIconUrl == null
+                  ? Image.asset('assets/images/group_image.png').image
+                  : Image.network(widget.group.groupIconUrl).image,
             ),
             SizedBox(
               width: 10,
@@ -137,7 +134,7 @@ class _AddEventDialogState extends State<AddEventDialog> {
     return Stack(
       children: [
         AlertDialog(
-          title: Text('Enter event name'),
+          title: Text('Create Event'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -148,8 +145,10 @@ class _AddEventDialogState extends State<AddEventDialog> {
                   child: Column(
                     children: [
                       TextFormField(
-                        decoration:
-                            textInputDecoration.copyWith(labelText: 'Event'),
+                        decoration: InputDecoration(
+                            labelText: 'Event Name',
+                            hintText: 'Event Name',
+                            hintStyle: TextStyle(color: Colors.grey[700])),
                         validator: (val) =>
                             val.isEmpty ? 'Enter event name' : null,
                         onChanged: (val) => _eventName = val,
@@ -167,6 +166,14 @@ class _AddEventDialogState extends State<AddEventDialog> {
                           ),
                           Expanded(
                             child: DropdownButtonFormField(
+                              selectedItemBuilder: (BuildContext context) {
+                                return <String>[evenly, byOrder]
+                                    .map<Widget>((String value) {
+                                  return Text(
+                                    '${value[0].toUpperCase()}${value.substring(1)}',
+                                  );
+                                }).toList();
+                              },
                               isExpanded: true,
                               items: <String>[evenly, byOrder]
                                   .map((String value) => DropdownMenuItem(
@@ -180,12 +187,11 @@ class _AddEventDialogState extends State<AddEventDialog> {
                         ],
                       ),
                       SizedBox(
-                        height: 10.0,
+                        height: 25.0,
                       ),
                       RaisedButton(
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10.0)),
-                        color: Colors.blue,
                         onPressed: _isLoading
                             ? null
                             : () {

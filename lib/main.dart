@@ -56,7 +56,6 @@ class App extends StatelessWidget {
                   color: Colors.orange,
                 ),
               ),
-              // TODO change home
               home: Wrapper(),
               // home: SignIn(),
             ),

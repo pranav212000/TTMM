@@ -14,7 +14,7 @@ class OrderItem extends StatelessWidget {
         Expanded(
             flex: 3,
             child: Container(
-              color: Colors.blue,
+              color: Colors.orange,
               padding: EdgeInsets.all(8),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,

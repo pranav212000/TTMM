@@ -67,10 +67,15 @@ class _BillPaymentState extends State<BillPayment> {
             children: [
               TextFormField(
                 initialValue: _amount == 0 ? null : _amount.toString(),
-                decoration: textInputDecoration.copyWith(labelText: 'Amount'),
+                decoration: InputDecoration(
+                    labelText: 'Amount',
+                    hintText: 'Amount',
+                    hintStyle: HINT_STYLE),
                 validator: (val) => val.isEmpty
                     ? 'Enter cost'
-                    : !isNumeric(val) ? 'Enter a number' : null,
+                    : !isNumeric(val)
+                        ? 'Enter a number'
+                        : null,
                 onChanged: (val) {
                   if (isNumeric(val)) _amount = int.parse(val);
                 },
@@ -162,7 +167,7 @@ class _BillPaymentState extends State<BillPayment> {
                               return ListTile(
                                 title: Image.memory(apps[index].icon),
                                 onTap: () async {
-                                  // TODO take note input from the user
+                                  // TODO take cash input from the user
                                   UpiResponse _upiResponse =
                                       await initiateTransaction(
                                           apps[index].app,
@@ -201,7 +206,6 @@ class _BillPaymentState extends State<BillPayment> {
                                         break;
                                     }
                                   } else {
-                                    // TODO post payment after upi
                                     String status = _upiResponse.status;
                                     print(_upiResponse.toString());
                                     switch (status) {

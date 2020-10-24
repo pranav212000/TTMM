@@ -49,7 +49,6 @@ class _GroupListItemState extends State<GroupListItem> {
   }
 
   Future getUsers() async {
-// TODO database to api migration
 
     Response response = await UserApiService.create()
         .getUsers({'phoneNumbers': widget.group.groupMembers});

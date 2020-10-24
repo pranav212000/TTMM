@@ -11,6 +11,7 @@ import 'package:ttmm/screens/event/pay_person.dart';
 import 'package:ttmm/services/event_api_service.dart';
 import 'package:qrscan/qrscan.dart' as scanner;
 import 'package:ttmm/shared/constants.dart';
+import 'package:ttmm/shared/hex_color.dart';
 import 'package:ttmm/shared/loading.dart';
 import 'package:uuid/uuid.dart';
 import 'package:validators/validators.dart';
@@ -67,7 +68,7 @@ class _EventHomeState extends State<EventHome> {
   @override
   void initState() {
     if (widget.event == null) {
-      _future = _getEvent("31f4d100-102e-11eb-8e7c-dfe2bca85517");
+      _future = _getEvent("108c16c0-1616-11eb-850d-f1a437e4c224");
     }
     getPhoneNumber();
     // _orders = getOrders();
@@ -85,7 +86,7 @@ class _EventHomeState extends State<EventHome> {
       // FIXME
       future: _getEvent(widget.event != null
           ? widget.event.eventId
-          : "31f4d100-102e-11eb-8e7c-dfe2bca85517"),
+          : "108c16c0-1616-11eb-850d-f1a437e4c224"),
       builder: (BuildContext context, AsyncSnapshot snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting)
           return Loading();
@@ -116,7 +117,8 @@ class _EventHomeState extends State<EventHome> {
                     color: Theme.of(context).primaryColor,
                     height: 50,
                     child: Center(
-                      child: Text("Swipe me!"),
+                      child: Text("Swipe me!",
+                          style: TextStyle(fontWeight: FontWeight.bold)),
                     ),
                   ),
                 ),
@@ -161,7 +163,7 @@ class _EventHomeState extends State<EventHome> {
                                     builder: (context) => PayPerson(
                                         eventId: widget.event != null
                                             ? widget.event.eventId
-                                            : "040a68d0-07dd-11eb-b854-b701c410207c")))
+                                            : "108c16c0-1616-11eb-850d-f1a437e4c224")))
                             .then((result) {
                           if (result == null)
                             showSnackbar(_scaffoldKey, 'Payment unsuccessful',
@@ -218,8 +220,10 @@ class _EventHomeState extends State<EventHome> {
                         child: Column(
                           children: [
                             TextFormField(
-                              decoration: textInputDecoration.copyWith(
-                                  labelText: 'Order'),
+                              decoration: InputDecoration(
+                                  labelText: 'Order',
+                                  hintText: 'Order',
+                                  hintStyle: HINT_STYLE),
                               validator: (val) =>
                                   val.isEmpty ? 'Enter order name' : null,
                               onChanged: (val) => order = val,
@@ -228,8 +232,10 @@ class _EventHomeState extends State<EventHome> {
                               height: 10.0,
                             ),
                             TextFormField(
-                              decoration: textInputDecoration.copyWith(
-                                  labelText: 'Quantity'),
+                              decoration: InputDecoration(
+                                  labelText: 'Quantity',
+                                  hintText: 'Quantity',
+                                  hintStyle: HINT_STYLE),
                               validator: (val) => val.isEmpty
                                   ? 'Enter quantity'
                                   : (!isNumeric(val) ? 'Enter a number' : null),
@@ -244,11 +250,15 @@ class _EventHomeState extends State<EventHome> {
                               height: 10.0,
                             ),
                             TextFormField(
-                              decoration: textInputDecoration.copyWith(
-                                  labelText: 'Cost'),
+                              decoration: InputDecoration(
+                                  labelText: 'Cost',
+                                  hintText: 'Cost',
+                                  hintStyle: HINT_STYLE),
                               validator: (val) => val.isEmpty
                                   ? 'Enter cost'
-                                  : !isNumeric(val) ? 'Enter a number' : null,
+                                  : !isNumeric(val)
+                                      ? 'Enter a number'
+                                      : null,
                               onChanged: (val) {
                                 if (isNumeric(val))
                                   setState(() {
@@ -270,7 +280,7 @@ class _EventHomeState extends State<EventHome> {
                             RaisedButton(
                               shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(10.0)),
-                              color: Colors.blue,
+                              color: Colors.orange,
                               onPressed: _isLoading
                                   ? null
                                   : () {
@@ -305,7 +315,6 @@ class _EventHomeState extends State<EventHome> {
         });
   }
 
-  // TODO add other quantities as parameters too!
   Future postOrder(String order, String eventId) async {
     Response response = await EventApiService.create().addOrder(eventId, {
       'orderId': Uuid().v1(),
@@ -340,5 +349,4 @@ class _EventHomeState extends State<EventHome> {
   Bill,
   who paid,
   Who paid how much,
-  How much do I owe to whom
 */
