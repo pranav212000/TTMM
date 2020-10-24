@@ -6,51 +6,59 @@ part of 'group_api_service.dart';
 // ChopperGenerator
 // **************************************************************************
 
+// ignore_for_file: always_put_control_body_on_new_line, always_specify_types, prefer_const_declarations
 class _$GroupApiService extends GroupApiService {
   _$GroupApiService([ChopperClient client]) {
     if (client == null) return;
     this.client = client;
   }
 
+  @override
   final definitionType = GroupApiService;
 
-  Future<Response> addGroup(Map<String, dynamic> body) {
+  @override
+  Future<Response<dynamic>> addGroup(Map<String, dynamic> body) {
     final $url = '/group/addGroup';
     final $body = body;
     final $request = Request('POST', $url, client.baseUrl, body: $body);
     return client.send<dynamic, dynamic>($request);
   }
 
-  Future<Response> getGroup(String groupId) {
+  @override
+  Future<Response<dynamic>> getGroup(String groupId) {
     final $url = '/group/';
-    final Map<String, dynamic> $params = {'groupId': groupId};
+    final $params = <String, dynamic>{'groupId': groupId};
     final $request = Request('GET', $url, client.baseUrl, parameters: $params);
     return client.send<dynamic, dynamic>($request);
   }
 
-  Future<Response> getGroups(Map<String, dynamic> body) {
+  @override
+  Future<Response<dynamic>> getGroups(Map<String, dynamic> body) {
     final $url = '/group/multiple';
     final $body = body;
     final $request = Request('GET', $url, client.baseUrl, body: $body);
     return client.send<dynamic, dynamic>($request);
   }
 
-  Future<Response> getEvents(String orderId) {
-    final $url = '/group/${orderId}/events';
+  @override
+  Future<Response<dynamic>> getEvents(String orderId) {
+    final $url = '/group/$orderId/events';
     final $request = Request('GET', $url, client.baseUrl);
     return client.send<dynamic, dynamic>($request);
   }
 
-  Future<Response> getMembersByGroupId(String groupId) {
+  @override
+  Future<Response<dynamic>> getMembersByGroupId(String groupId) {
     final $url = '/group/members';
-    final Map<String, dynamic> $params = {'groupId': groupId};
+    final $params = <String, dynamic>{'groupId': groupId};
     final $request = Request('GET', $url, client.baseUrl, parameters: $params);
     return client.send<dynamic, dynamic>($request);
   }
 
-  Future<Response> getMembersByEventId(String eventId) {
+  @override
+  Future<Response<dynamic>> getMembersByEventId(String eventId) {
     final $url = '/group/members';
-    final Map<String, dynamic> $params = {'eventId': eventId};
+    final $params = <String, dynamic>{'eventId': eventId};
     final $request = Request('GET', $url, client.baseUrl, parameters: $params);
     return client.send<dynamic, dynamic>($request);
   }

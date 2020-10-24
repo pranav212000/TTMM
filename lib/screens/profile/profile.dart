@@ -17,14 +17,14 @@ class _ProfileState extends State<Profile>
         AutomaticKeepAliveClientMixin<Profile> {
   String _phoneNumber;
   Future _futureUserData;
-  Future _futureToGive;
+  // Future _futureToGive;
   // Future _futureToGet;
   TabController _tabController;
 
   @override
   void initState() {
     _futureUserData = getUserData();
-    _futureToGive = getUserToGiveOrGets();
+    // _futureToGive = getUserToGiveOrGets();
     // _futureToGet = getUserToGets();
     _tabController = TabController(length: 5, vsync: this, initialIndex: 2);
     _tabController.addListener(_handleTabIndex);
@@ -153,30 +153,31 @@ class _ProfileState extends State<Profile>
           Center(
             child: Text('ToGet'),
           ),
-          FutureBuilder(
-            future: _futureToGive,
-            builder: (BuildContext context, AsyncSnapshot snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return Center(
-                  child: CircularProgressIndicator(),
-                );
-              } else {
-                if(snapshot.data == null)
-                return Center(child: Text('No ToGets yet!'),);
-                else
-                return ListView.builder(
-                  itemCount: snapshot.data.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    ToGiveOrGet toGive = snapshot.data[index];
-                    return ListTile(
-                      title: Text(toGive.eventName),
-                      trailing: Text(toGive.amount.toString()),
-                    );
-                  },
-                );
-              }
-            },
-          ),
+          // FutureBuilder(
+          //   future: _futureToGive,
+          //   builder: (BuildContext context, AsyncSnapshot snapshot) {
+          //     if (snapshot.connectionState == ConnectionState.waiting) {
+          //       return Center(
+          //         child: CircularProgressIndicator(),
+          //       );
+          //     } else {
+          //       if(snapshot.data == null)
+          //       return Center(child: Text('No ToGets yet!'),);
+          //       else
+          //       return ListView.builder(
+          //         itemCount: snapshot.data.length,
+          //         itemBuilder: (BuildContext context, int index) {
+          //           ToGiveOrGet toGive = snapshot.data[index];
+          //           return ListTile(
+          //             title: Text(toGive.eventName),
+          //             trailing: Text(toGive.amount.toString()),
+          //           );
+          //         },
+          //       );
+          //     }
+          //   },
+          // ),
+          Center(child: Text('ToGive/get'))
         ]));
   }
 
@@ -190,29 +191,30 @@ class _ProfileState extends State<Profile>
     return user;
   }
 
+// FIXME 
   Future getUserToGiveOrGets() async {
     if (_phoneNumber == null) {
       SharedPreferences preferences = await SharedPreferences.getInstance();
       _phoneNumber = preferences.getString(currentPhoneNUmber);
     }
 
-    Response response =
-        await UserApiService.create().getUserToGives(_phoneNumber);
+    // Response response =
+    //     await UserApiService.create().getUserToGives(_phoneNumber);
 
-    List<ToGiveOrGet> toGives = new List<ToGiveOrGet>();
-    for (Map<String, dynamic> event in response.body) {
-      var eventToGives = event['toGive'];
-      var eventName = event['eventName'];
-      var eventId = event['eventId'];
-      for (Map<String, dynamic> eventToGive in eventToGives) {
-        ToGiveOrGet toGive = ToGiveOrGet.fromJson(eventToGive);
-        toGive.eventName = eventName;
-        toGive.eventId = eventId;
-        toGives.add(toGive);
-      }
-    }
+    // List<ToGiveOrGet> toGives = new List<ToGiveOrGet>();
+    // for (Map<String, dynamic> event in response.body) {
+    //   var eventToGives = event['toGive'];
+    //   var eventName = event['eventName'];
+    //   var eventId = event['eventId'];
+    //   for (Map<String, dynamic> eventToGive in eventToGives) {
+    //     ToGiveOrGet toGive = ToGiveOrGet.fromJson(eventToGive);
+    //     toGive.eventName = eventName;
+    //     toGive.eventId = eventId;
+    //     toGives.add(toGive);
+    //   }
+    // }
 
-    return toGives;
+    return null;
   }
 
 // FIXME toGets

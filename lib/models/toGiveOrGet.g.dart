@@ -8,10 +8,11 @@ part of 'toGiveOrGet.dart';
 
 ToGiveOrGet _$ToGiveOrGetFromJson(Map<String, dynamic> json) {
   return ToGiveOrGet(
-      phoneNumber: json['phoneNumber'],
-      amount: json['amount'] as int,
-      eventId: json['eventId'],
-      eventName: json['eventName']);
+    phoneNumber: json['phoneNumber'] as String,
+    amount: json['amount'] as int,
+    eventId: json['eventId'] as String,
+    eventName: json['eventName'] as String,
+  );
 }
 
 Map<String, dynamic> _$ToGiveOrGetToJson(ToGiveOrGet instance) =>
@@ -19,5 +20,5 @@ Map<String, dynamic> _$ToGiveOrGetToJson(ToGiveOrGet instance) =>
       'phoneNumber': instance.phoneNumber,
       'amount': instance.amount,
       'eventId': instance.eventId,
-      'eventName': instance.eventName
+      'eventName': instance.eventName,
     };

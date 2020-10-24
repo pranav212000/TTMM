@@ -8,12 +8,13 @@ part of 'userdata.dart';
 
 UserData _$UserDataFromJson(Map<String, dynamic> json) {
   return UserData(
-      uid: json['uid'],
-      name: json['name'],
-      phoneNumber: json['phoneNumber'],
-      groups: json['groups'] as List,
-      profileUrl: json['profileUrl'],
-      upiId: json['upiId']);
+    uid: json['uid'] as String,
+    name: json['name'] as String,
+    phoneNumber: json['phoneNumber'] as String,
+    groups: json['groups'] as List,
+    profileUrl: json['profileUrl'] as String,
+    upiId: json['upiId'] as String,
+  );
 }
 
 Map<String, dynamic> _$UserDataToJson(UserData instance) => <String, dynamic>{
@@ -22,5 +23,5 @@ Map<String, dynamic> _$UserDataToJson(UserData instance) => <String, dynamic>{
       'phoneNumber': instance.phoneNumber,
       'groups': instance.groups,
       'profileUrl': instance.profileUrl,
-      'upiId': instance.upiId
+      'upiId': instance.upiId,
     };
