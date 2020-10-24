@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:ttmm/shared/hex_color.dart';
 
 const textInputDecoration = InputDecoration(
     hoverColor: Colors.cyan,
@@ -13,11 +15,35 @@ void showSnackbar(GlobalKey<ScaffoldState> _scaffoldKey, String text,
     {Color color}) {
   if (color == null) {
     _scaffoldKey.currentState.showSnackBar(SnackBar(
-      content: Text(text),
+      content: Text(
+        text,
+        style: GoogleFonts.raleway(),
+      ),
     ));
   } else {
     _scaffoldKey.currentState.showSnackBar(SnackBar(
-      content: Text(text),
+      content: Text(
+        text,
+        style: GoogleFonts.raleway(),
+      ),
+      backgroundColor: color,
+    ));
+  }
+}
+
+void showAlertSnackBar(GlobalKey<ScaffoldState> _scaffoldKey, String text,
+    {Color color}) {
+  if (color == null) {
+    _scaffoldKey.currentState.showSnackBar(SnackBar(
+      content: Text(text, style: GoogleFonts.raleway(color: Colors.white)),
+      backgroundColor: HexColor(('#F22B29')),
+    ));
+  } else {
+    _scaffoldKey.currentState.showSnackBar(SnackBar(
+      content: Text(
+        text,
+        style: GoogleFonts.raleway(),
+      ),
       backgroundColor: color,
     ));
   }

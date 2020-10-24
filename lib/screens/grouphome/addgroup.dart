@@ -230,25 +230,27 @@ class _AddGroupState extends State<AddGroup> {
                 : Column(
                     children: [
                       Card(
+                        margin: EdgeInsets.all(8),
                         elevation: 10,
                         child: Form(
                           key: _formKey,
                           child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               Padding(
                                 padding: const EdgeInsets.all(8.0),
                                 child: ClipOval(
                                   child: Material(
-                                    color: Colors.blue, // button color
+                                    color: Colors.black54, // button color
                                     child: InkWell(
-                                      splashColor: Colors.red, // inkwell color
+                                      splashColor:
+                                          Colors.black26, // inkwell color
                                       child: SizedBox(
                                           width: 45,
                                           height: 45,
                                           child: _image == null
                                               ? Icon(
                                                   Icons.add_a_photo,
-                                                  color: Colors.white,
                                                 )
                                               : Image.file(_image)),
                                       onTap: () => getImage(),
@@ -259,13 +261,40 @@ class _AddGroupState extends State<AddGroup> {
                               Expanded(
                                 child: Padding(
                                   padding: const EdgeInsets.all(8.0),
-                                  child: TextFormField(
-                                    onChanged: (val) => groupName = val,
-                                    validator: (val) => val.isEmpty
-                                        ? 'Please enter a group name'
-                                        : null,
-                                    decoration: InputDecoration(
-                                      labelText: 'Group Name',
+                                  // child: TextFormField(
+                                  //   onChanged: (val) => groupName = val,
+                                  //   validator: (val) => val.isEmpty
+                                  //       ? 'Please enter a group name'
+                                  //       : null,
+                                  //   decoration: InputDecoration(
+                                  //     labelText: 'Group Name',
+                                  //   ),
+                                  // ),
+                                  child: Theme(
+                                    data: Theme.of(context).copyWith(
+                                        primaryColor: Colors.orange,
+                                        accentColor: Colors.orange),
+                                    child: TextFormField(
+                                      style: TextStyle(color: Colors.white),
+                                      decoration: InputDecoration(
+                                        enabled: true,
+                                        hintText: "Group Name",
+                                        labelText: 'Group Name',
+                                        hintStyle:
+                                            TextStyle(color: Colors.grey[700]),
+                                        enabledBorder: UnderlineInputBorder(
+                                          borderSide:
+                                              BorderSide(color: Colors.white),
+                                        ),
+                                        focusedBorder: UnderlineInputBorder(
+                                          borderSide:
+                                              BorderSide(color: Colors.orange),
+                                        ),
+                                      ),
+                                      onChanged: (val) => groupName = val,
+                                      validator: (val) => val.isEmpty
+                                          ? 'Please enter a group name'
+                                          : null,
                                     ),
                                   ),
                                 ),

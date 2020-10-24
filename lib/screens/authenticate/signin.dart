@@ -39,11 +39,11 @@ class SignIn extends StatelessWidget {
                         margin: EdgeInsets.only(left: 50, right: 50),
                         child: Theme(
                           data: Theme.of(context).copyWith(
-                            primaryColor: Colors.orange,
-                            accentColor: Colors.orange
-                          ),
+                              primaryColor: Colors.orange,
+                              accentColor: Colors.orange),
                           child: TextFormField(
                             style: TextStyle(color: Colors.white),
+                            keyboardType: TextInputType.number,
                             decoration: InputDecoration(
                               prefixIcon: Icon(
                                 Icons.phone_android,

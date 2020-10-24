@@ -7,6 +7,7 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:ttmm/services/auth.dart';
 import 'package:ttmm/shared/constants.dart';
+import 'package:ttmm/shared/hex_color.dart';
 import 'package:validators/validators.dart';
 
 class EnterOTP extends StatefulWidget {
@@ -35,11 +36,7 @@ class _EnterOTPState extends State<EnterOTP> {
   String currentText = "";
   void verifyPhone() async {
     if (!_isCodeSent) {
-      await _authService
-          .verifyPhone(_scaffoldKey, widget._phone, enableButton)
-          .whenComplete(() => _scaffoldKey.currentState.showSnackBar(SnackBar(
-                content: Text('Verification Done!'),
-              )));
+      await _authService.verifyPhone(_scaffoldKey, widget._phone, enableButton);
     }
   }
 
@@ -153,6 +150,7 @@ class _EnterOTPState extends State<EnterOTP> {
                   // style: TextStyle(color: Colors.amber),
                 ),
                 onPressed: () async {
+                  FocusScope.of(context).unfocus();
                   if (_formKey.currentState.validate()) {
                     if (isNumeric(_smsCode)) {
                       User user = await _authService
@@ -165,7 +163,8 @@ class _EnterOTPState extends State<EnterOTP> {
                           _loading = false;
                         });
 
-                        showSnackbar(_scaffoldKey, "Enter Valid OTP");
+                        _scaffoldKey.currentState.removeCurrentSnackBar();
+                        showAlertSnackBar(_scaffoldKey, "Enter Valid OTP");
                       }
                     }
                   }

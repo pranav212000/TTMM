@@ -22,6 +22,7 @@ class MyDrawer extends StatelessWidget {
                       child: Icon(
                         Icons.add_a_photo,
                         size: 60,
+                        color: Theme.of(context).iconTheme.color,
                       ))
                   : CircleAvatar(
                       radius: 70,
@@ -36,13 +37,11 @@ class MyDrawer extends StatelessWidget {
             ),
             leading: Icon(
               Icons.home,
-              color: Colors.blue,
             ),
           ),
           ListTile(
             leading: Icon(
               Icons.exit_to_app,
-              color: Colors.blue,
             ),
             visualDensity: VisualDensity(horizontal: 0, vertical: -4),
             title: Text('Signout'),
