@@ -35,7 +35,7 @@ class _PayPersonState extends State<PayPerson>
   bool _isUpi = false;
   UpiIndia _upiIndia = UpiIndia();
   List<UpiApp> apps;
-  String _amount;
+  String _amount = '';
 
   String _note;
 
@@ -228,6 +228,7 @@ class _PayPersonState extends State<PayPerson>
 
   showPaymentModeDialog(String phoneNumber) {
     showDialog(
+        barrierDismissible: false,
         context: _scaffoldKey.currentContext,
         builder: (context) {
           return AlertDialog(

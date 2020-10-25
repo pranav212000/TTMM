@@ -164,6 +164,7 @@ class _HomeState extends State<Home> with AutomaticKeepAliveClientMixin<Home> {
                     }
                   } else {
                     showDialog(
+                        barrierDismissible: false,
                         context: context,
                         builder: (BuildContext context) => CupertinoAlertDialog(
                               title: Text('Permissions error'),

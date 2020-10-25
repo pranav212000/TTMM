@@ -1,5 +1,6 @@
 import 'package:chopper/chopper.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:solid_bottom_sheet/solid_bottom_sheet.dart';
 import 'package:ttmm/models/event.dart';
@@ -205,6 +206,7 @@ class _EventHomeState extends State<EventHome> {
     bool _isLoading = false;
     final _formkey = GlobalKey<FormState>();
     showDialog(
+        barrierDismissible: false,
         context: _scaffoldKey.currentContext,
         builder: (context) {
           return StatefulBuilder(builder: (BuildContext context, setState) {
@@ -272,8 +274,10 @@ class _EventHomeState extends State<EventHome> {
                             Visibility(
                                 visible:
                                     _quantity == 0 || _cost == 0 ? false : true,
-                                child:
-                                    Text('Total Cost = ${_quantity * _cost}')),
+                                child: Text(
+                                  'Total Cost = ' + RS + '${_quantity * _cost}',
+                                  style: GoogleFonts.josefinSans(),
+                                )),
                             SizedBox(
                               height: 10.0,
                             ),

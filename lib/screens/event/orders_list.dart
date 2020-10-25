@@ -1,6 +1,7 @@
 import 'package:chopper/chopper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:ttmm/models/order.dart';
 import 'package:ttmm/services/event_api_service.dart';
 import 'package:ttmm/services/order_api_service.dart';
@@ -107,53 +108,9 @@ class OrderListState extends State<OrderList> {
               caption: 'Delete',
               color: Colors.redAccent,
               icon: Icons.delete,
-              onTap: _isLoading
-                  ? null
-                  : () {
-                    // TODO circular progress indicator visibility fix
-                      showDialog(
-                        context: context,
-                        builder: (context) {
-                          return Stack(children: [
-                            AlertDialog(
-                              title: Text('Confirm'),
-                              content: Text(
-                                  'Are you sure you want to delete ${order.itemName}'),
-                              actions: [
-                                FlatButton(
-                                    onPressed: () {
-                                      setState(() {
-                                        _isLoading = true;
-                                      });
-                                      deleteOrder(order.orderId);
-                                      setState(() {});
-                                    },
-                                    child: Text('Yes')),
-                                FlatButton(
-                                    onPressed: () {
-                                      setState(() {
-                                        _isLoading = false;
-                                        Navigator.of(context).pop();
-                                      });
-                                    },
-                                    child: Text('No'))
-                              ],
-                            ),
-                            Visibility(
-                                visible: _isLoading,
-                                child: Container(
-                                  width: double.infinity,
-                                  height: double.infinity,
-                                  decoration:
-                                      BoxDecoration(color: Colors.black38),
-                                  child: Center(
-                                    child: CircularProgressIndicator(),
-                                  ),
-                                ))
-                          ]);
-                        },
-                      );
-                    }),
+              onTap: () {
+                deleteOrder(order);
+              }),
         ],
         secondaryActions: [
           IconSlideAction(
@@ -169,99 +126,125 @@ class OrderListState extends State<OrderList> {
   }
 
   void updateOrder(Order order, String item, int quantity, int cost) {
+    bool _isLoading = false;
     showDialog(
+        barrierDismissible: false,
         context: context,
         builder: (_) {
           return StatefulBuilder(
             builder: (BuildContext context, setState) {
-              return AlertDialog(
-                title: Text('Enter order'),
-                content: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Form(
-                        key: _formKey,
-                        child: Column(
-                          children: [
-                            TextFormField(
-                              initialValue: item,
-                              decoration: InputDecoration(
-                                  labelText: 'Order',
-                                  hintText: 'Order',
-                                  hintStyle: HINT_STYLE),
-                              validator: (val) =>
-                                  val.isEmpty ? 'Enter order name' : null,
-                              onChanged: (val) => item = val,
-                            ),
-                            SizedBox(
-                              height: 10.0,
-                            ),
-                            TextFormField(
-                              initialValue: quantity.toString(),
-                              decoration: InputDecoration(
-                                  labelText: 'Quantity',
-                                  hintText: 'Quantity',
-                                  hintStyle: HINT_STYLE),
-                              validator: (val) => val.isEmpty
-                                  ? 'Enter quantity'
-                                  : (!isNumeric(val) ? 'Enter a number' : null),
-                              onChanged: (val) {
-                                if (isNumeric(val))
-                                  setState(() {
-                                    quantity = int.parse(val);
-                                  });
-                              },
-                            ),
-                            SizedBox(
-                              height: 10.0,
-                            ),
-                            TextFormField(
-                              initialValue: cost.toString(),
-                              decoration: InputDecoration(
-                                  labelText: 'Cost',
-                                  hintText: 'Cost',
-                                  hintStyle: HINT_STYLE),
-                              validator: (val) => val.isEmpty
-                                  ? 'Enter cost'
-                                  : !isNumeric(val)
-                                      ? 'Enter a number'
-                                      : null,
-                              onChanged: (val) {
-                                if (isNumeric(val))
-                                  setState(() {
-                                    cost = int.parse(val);
-                                  });
-                              },
-                            ),
-                            SizedBox(
-                              height: 10.0,
-                            ),
-                            Visibility(
-                                visible:
-                                    quantity == 0 || cost == 0 ? false : true,
-                                child: Text('Total Cost = ${quantity * cost}')),
-                            SizedBox(
-                              height: 10.0,
-                            ),
-                            RaisedButton(
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10.0)),
-                              color: Colors.orange,
-                              onPressed: () {
-                                if (_formKey.currentState.validate()) {
-                                  postUpdate(order, item, quantity, cost);
-                                }
-                              },
-                              child: Text('Update'),
-                            )
-                          ],
+              return Stack(children: [
+                AlertDialog(
+                  title: Text('Enter order'),
+                  content: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Form(
+                          key: _formKey,
+                          child: Column(
+                            children: [
+                              TextFormField(
+                                initialValue: item,
+                                decoration: InputDecoration(
+                                    labelText: 'Order',
+                                    hintText: 'Order',
+                                    hintStyle: HINT_STYLE),
+                                validator: (val) =>
+                                    val.isEmpty ? 'Enter order name' : null,
+                                onChanged: (val) => item = val,
+                              ),
+                              SizedBox(
+                                height: 10.0,
+                              ),
+                              TextFormField(
+                                initialValue: quantity.toString(),
+                                decoration: InputDecoration(
+                                    labelText: 'Quantity',
+                                    hintText: 'Quantity',
+                                    hintStyle: HINT_STYLE),
+                                validator: (val) => val.isEmpty
+                                    ? 'Enter quantity'
+                                    : (!isNumeric(val)
+                                        ? 'Enter a number'
+                                        : null),
+                                onChanged: (val) {
+                                  if (isNumeric(val))
+                                    setState(() {
+                                      quantity = int.parse(val);
+                                    });
+                                },
+                              ),
+                              SizedBox(
+                                height: 10.0,
+                              ),
+                              TextFormField(
+                                initialValue: cost.toString(),
+                                decoration: InputDecoration(
+                                    labelText: 'Cost',
+                                    hintText: 'Cost',
+                                    hintStyle: HINT_STYLE),
+                                validator: (val) => val.isEmpty
+                                    ? 'Enter cost'
+                                    : !isNumeric(val)
+                                        ? 'Enter a number'
+                                        : null,
+                                onChanged: (val) {
+                                  if (isNumeric(val))
+                                    setState(() {
+                                      cost = int.parse(val);
+                                    });
+                                },
+                              ),
+                              SizedBox(
+                                height: 10.0,
+                              ),
+                              Visibility(
+                                  visible:
+                                      quantity == 0 || cost == 0 ? false : true,
+                                  child: Text(
+                                      'Total Cost = ' +
+                                          RS +
+                                          '${quantity * cost}',
+                                      style: GoogleFonts.josefinSans())),
+                              SizedBox(
+                                height: 10.0,
+                              ),
+                              RaisedButton(
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10.0)),
+                                color: Colors.orange,
+                                onPressed: _isLoading
+                                    ? null
+                                    : () {
+                                        if (_formKey.currentState.validate()) {
+                                          setState(() {
+                                            _isLoading = true;
+                                          });
+                                          postUpdate(
+                                              order, item, quantity, cost);
+                                        }
+                                      },
+                                child: Text('Update'),
+                              )
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-              );
+                Visibility(
+                    visible: _isLoading,
+                    child: Container(
+                      width: double.infinity,
+                      height: double.infinity,
+                      decoration: BoxDecoration(color: Colors.black38),
+                      child: Center(
+                        child: CircularProgressIndicator(),
+                      ),
+                    ))
+              ]);
             },
           );
         });
@@ -298,7 +281,54 @@ class OrderListState extends State<OrderList> {
     }
   }
 
-  Future deleteOrder(String orderId) async {
+  void deleteOrder(Order order) {
+    showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(builder: (BuildContext context, setState) {
+          return Stack(children: [
+            AlertDialog(
+              title: Text('Confirm'),
+              content:
+                  Text('Are you sure you want to delete ${order.itemName}'),
+              actions: [
+                FlatButton(
+                    onPressed: () {
+                      setState(() {
+                        _isLoading = true;
+                      });
+                      postDeleteOrder(order.orderId);
+                      setState(() {});
+                    },
+                    child: Text('Yes')),
+                FlatButton(
+                    onPressed: () {
+                      setState(() {
+                        _isLoading = false;
+                        Navigator.of(context).pop();
+                      });
+                    },
+                    child: Text('No'))
+              ],
+            ),
+            Visibility(
+                visible: _isLoading,
+                child: Container(
+                  width: double.infinity,
+                  height: double.infinity,
+                  decoration: BoxDecoration(color: Colors.black38),
+                  child: Center(
+                    child: CircularProgressIndicator(),
+                  ),
+                ))
+          ]);
+        });
+      },
+    );
+  }
+
+  Future postDeleteOrder(String orderId) async {
     Response response = await OrderApiService.create().deleteOrder(orderId);
     Map<String, dynamic> map = response.body;
 

@@ -83,3 +83,4 @@ const String cash = 'cash';
 const String upi = 'upi';
 const String to = 'to';
 final TextStyle HINT_STYLE = TextStyle(color: Colors.grey[700]);
+const String RS = "\u20B9";

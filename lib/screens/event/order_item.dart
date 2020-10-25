@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:ttmm/models/order.dart';
+import 'package:ttmm/shared/constants.dart';
 
 class OrderItem extends StatelessWidget {
   final Order order;
@@ -21,11 +23,11 @@ class OrderItem extends StatelessWidget {
                 children: [
                   Text(
                     '${order.quantity}x',
-                    style: TextStyle(fontSize: order.quantity < 99 ? 30 : 24),
+                    style: GoogleFonts.josefinSans(fontSize: order.quantity < 99 ? 30 : 24),
                   ),
                   Text(
-                    '\$${order.cost}',
-                    style: TextStyle(fontSize: 14),
+                    RS + '${order.cost}',
+                    style: GoogleFonts.josefinSans(fontSize: 14),
                   ),
                 ],
               ),
@@ -42,8 +44,9 @@ class OrderItem extends StatelessWidget {
         Expanded(
             flex: 2,
             child: Text(
-              '\$${order.totalCost}',
+              RS + '${order.totalCost}',
               maxLines: 1,
+              style: GoogleFonts.josefinSans(),
               // textAlign: TextAlign.end,
             )),
       ]),
