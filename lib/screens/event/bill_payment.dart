@@ -13,7 +13,7 @@ import 'package:validators/validators.dart';
 import 'package:qrscan/qrscan.dart' as scanner;
 
 class BillPayment extends StatefulWidget {
-  String eventId;
+  final String eventId;
 
   BillPayment({@required this.eventId});
   @override
@@ -50,6 +50,8 @@ class _BillPaymentState extends State<BillPayment> {
     super.initState();
   }
 
+// TODO add the total bill amount paid amount and remaining amount just to fill the page looks pretty empty right now 
+// FIXME also add the bottom sheet which is probably not there right now
   @override
   Widget build(BuildContext context) {
     return Scaffold(

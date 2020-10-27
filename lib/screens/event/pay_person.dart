@@ -26,6 +26,7 @@ class PayPerson extends StatefulWidget {
 class _PayPersonState extends State<PayPerson>
     with SingleTickerProviderStateMixin {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
+  final _formKey = GlobalKey<FormState>();
   TabController _tabController;
   Future _futureToGet;
   Future _futureAll;
@@ -98,7 +99,7 @@ class _PayPersonState extends State<PayPerson>
               else {
                 if (snapshot.data.length == 0) {
                   return Center(
-                    child: Text('Noone to get any money yet'),
+                    child: Text('No one to get any money yet'),
                   );
                 } else {
                   return ListView.builder(
@@ -107,6 +108,10 @@ class _PayPersonState extends State<PayPerson>
                       Map<String, dynamic> map = snapshot.data[index];
                       return ListTile(
                         title: Text(map['user'].name),
+                        leading: CircleAvatar(
+                          backgroundImage:
+                              Image.network(map['user'].profileUrl).image,
+                        ),
                         trailing: Text(map['amount'].toString()),
                         onTap: () async {
                           if (map['user'].upiId == null) {
@@ -148,6 +153,9 @@ class _PayPersonState extends State<PayPerson>
                         UserData user = snapshot.data[index];
                         return ListTile(
                           title: Text(user.name),
+                          leading: CircleAvatar(
+                            backgroundImage: Image.network(user.profileUrl).image,
+                          ),
                           onTap: () async {
                             if (user.upiId == null) {
                               showPaymentModeDialog(user.phoneNumber);
@@ -234,69 +242,70 @@ class _PayPersonState extends State<PayPerson>
           return AlertDialog(
             title: Text('Enter amount'),
             content: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  TextField(
-                    decoration: InputDecoration(
-                        border: InputBorder.none, hintText: 'Amount'),
-                    onChanged: (val) => _amount = val,
-                  ),
-                  TextField(
-                    decoration: InputDecoration(
-                        border: InputBorder.none, hintText: 'Note'),
-                    onChanged: (val) => _note = val,
-                  ),
-                  Row(
-                    children: [
-                      FlatButton(
-                        color: Colors.green,
-                        child: Image.asset(
-                          'assets/images/cash.png',
-                          scale: 5,
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    TextFormField(
+                      decoration: InputDecoration(
+                          hintText: 'Amount', labelText: 'Amount'),
+                      onChanged: (val) => _amount = val,
+                      validator: (val) => val.isEmpty
+                          ? 'Enter amount'
+                          : (!isNumeric(val) ? 'Enter a number' : null),
+                    ),
+                    TextField(
+                      decoration:
+                          InputDecoration(hintText: 'Note', labelText: 'Note'),
+                      onChanged: (val) => _note = val,
+                    ),
+                    Row(
+                      children: [
+                        FlatButton(
+                          color: Colors.green,
+                          child: Image.asset(
+                            'assets/images/cash.png',
+                            scale: 5,
+                          ),
+                          onPressed: null,
                         ),
-                        onPressed: null,
-                      ),
-                      FlatButton(
-                        child: Image.asset(
-                          'assets/images/upi.png',
-                          scale: 4,
-                        ),
-                        onPressed: () async {
-                          if (_amount.isEmpty)
-                            showSnackbar(_scaffoldKey, "Please enter an amount",
-                                color: Colors.red);
-                          else if (!isNumeric(_amount))
-                            showSnackbar(_scaffoldKey, "Enter valid amount",
-                                color: Colors.red);
-                          else {
-                            if (_upiId == null) {
-                              print('NO UPI ID, SCAN QR CODE');
+                        FlatButton(
+                          child: Image.asset(
+                            'assets/images/upi.png',
+                            scale: 4,
+                          ),
+                          onPressed: () async {
+                            if (_formKey.currentState.validate()) {
+                              if (_upiId == null) {
+                                print('NO UPI ID, SCAN QR CODE');
 
-                              String scanResult = await scanner.scan();
-                              print(scanResult);
-                              var decoded = Uri.decodeComponent(scanResult);
+                                String scanResult = await scanner.scan();
+                                print(scanResult);
+                                var decoded = Uri.decodeComponent(scanResult);
 
-                              Uri uri = Uri.dataFromString(scanResult);
-                              Map<String, dynamic> params = uri.queryParameters;
-                              var uid = params['pa'];
-                              var name = Uri.decodeComponent(params['pn']);
-                              print(uid);
-                              print(name);
-                              print(decoded);
-                              _upiId = uid;
-                              _name = name;
+                                Uri uri = Uri.dataFromString(scanResult);
+                                Map<String, dynamic> params =
+                                    uri.queryParameters;
+                                var uid = params['pa'];
+                                var name = Uri.decodeComponent(params['pn']);
+                                print(uid);
+                                print(name);
+                                print(decoded);
+                                _upiId = uid;
+                                _name = name;
+                              }
+                              _isUpi = true;
+                              Navigator.pop(context);
+                              showAppsBottomSheet(phoneNumber);
                             }
-                            _isUpi = true;
-                            Navigator.pop(context);
-                            showAppsBottomSheet(phoneNumber);
-                          }
-                        },
-                      ),
-                    ],
-                  )
-                ],
+                          },
+                        ),
+                      ],
+                    )
+                  ],
+                ),
               ),
             ),
           );

@@ -68,12 +68,12 @@ class _EventHomeState extends State<EventHome> {
 
   @override
   void initState() {
+    super.initState();
     if (widget.event == null) {
       _future = _getEvent("108c16c0-1616-11eb-850d-f1a437e4c224");
     }
     getPhoneNumber();
     // _orders = getOrders();
-    super.initState();
   }
 
   @override
@@ -169,12 +169,14 @@ class _EventHomeState extends State<EventHome> {
                           if (result == null)
                             showSnackbar(_scaffoldKey, 'Payment unsuccessful',
                                 color: Colors.red);
-                          if (result) {
-                            showSnackbar(_scaffoldKey, 'Payment successful',
-                                color: Colors.green);
-                          } else {
-                            showSnackbar(_scaffoldKey, 'Payment unsuccessful',
-                                color: Colors.red);
+                          else {
+                            if (result) {
+                              showSnackbar(_scaffoldKey, 'Payment successful',
+                                  color: Colors.green);
+                            } else {
+                              showSnackbar(_scaffoldKey, 'Payment unsuccessful',
+                                  color: Colors.red);
+                            }
                           }
                         });
                       },

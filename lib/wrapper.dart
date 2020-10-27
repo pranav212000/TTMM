@@ -1,9 +1,14 @@
 import 'package:chopper/chopper.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebaseAuth;
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:ttmm/PushNotificationManager.dart';
+import 'package:ttmm/fcm/fcm.dart';
+import 'package:ttmm/fcm/notification_manager.dart';
 import 'package:ttmm/models/group.dart';
 import 'package:ttmm/navigator.dart';
 import 'package:ttmm/screens/authenticate/signin.dart';
@@ -15,7 +20,12 @@ import 'package:ttmm/shared/constants.dart';
 
 import 'models/userdata.dart';
 
-class Wrapper extends StatelessWidget {
+class Wrapper extends StatefulWidget {
+  @override
+  _WrapperState createState() => _WrapperState();
+}
+
+class _WrapperState extends State<Wrapper> {
   Future<List<Group>> getGroups() async {
     print("CURRENT TIME :");
     print(Timestamp.fromDate(DateTime.now()));
@@ -43,9 +53,24 @@ class Wrapper extends StatelessWidget {
   }
 
   @override
+  void initState() {
+    super.initState();
+    // initFirebase();
+  }
+
+  void initFirebase() {
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+
+      // NotificationManger.init(context: context);
+
+      // Fcm.initConfigure();
+     
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final user = Provider.of<firebaseAuth.User>(context);
-
     if (user == null)
       return SignIn();
     // else {
@@ -63,5 +88,9 @@ class Wrapper extends StatelessWidget {
     SharedPreferences preferences = await SharedPreferences.getInstance();
     preferences.setString(currentUser, user.uid);
     preferences.setString(currentPhoneNUmber, user.phoneNumber);
+    FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
+    String token = await _firebaseMessaging.getToken();
+    print("token : $token");
+    preferences.setString(FCM_TOKEN, token);
   }
 }
