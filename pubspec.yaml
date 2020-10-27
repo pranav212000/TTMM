@@ -52,6 +52,7 @@ dependencies:
   build_runner: ^1.10.3
   fluttertoast: ^7.1.1
   firebase_messaging: ^7.0.3
+  flutter_local_notifications: ^3.0.1
 
 
 dev_dependencies:

@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:ttmm/PushNotificationManager.dart';
 import 'package:ttmm/fcm/fcm.dart';
 import 'package:ttmm/fcm/notification_manager.dart';
 import 'package:ttmm/models/group.dart';
@@ -15,6 +14,7 @@ import 'package:ttmm/screens/authenticate/signin.dart';
 import 'package:ttmm/screens/event/event_home.dart';
 import 'package:ttmm/screens/grouphome/addgroup.dart';
 import 'package:ttmm/services/database.dart';
+import 'package:ttmm/services/firebase_api_service.dart';
 import 'package:ttmm/services/user_api_service.dart';
 import 'package:ttmm/shared/constants.dart';
 
@@ -60,11 +60,9 @@ class _WrapperState extends State<Wrapper> {
 
   void initFirebase() {
     SchedulerBinding.instance.addPostFrameCallback((_) {
-
       // NotificationManger.init(context: context);
 
       // Fcm.initConfigure();
-     
     });
   }
 
@@ -73,15 +71,15 @@ class _WrapperState extends State<Wrapper> {
     final user = Provider.of<firebaseAuth.User>(context);
     if (user == null)
       return SignIn();
-    // else {
-    //   setSharedPreferences(user);
-    //   return NavigatorPage();
-    // }
-// TODO fix this jugad!
     else {
       setSharedPreferences(user);
-      return EventHome();
+      return NavigatorPage();
     }
+// // TODO fix this jugad!
+//     else {
+//       setSharedPreferences(user);
+//       return EventHome();
+//     }
   }
 
   void setSharedPreferences(firebaseAuth.User user) async {
@@ -92,5 +90,12 @@ class _WrapperState extends State<Wrapper> {
     String token = await _firebaseMessaging.getToken();
     print("token : $token");
     preferences.setString(FCM_TOKEN, token);
+
+    Map<String, dynamic> body = {
+      'phoneNumber': user.phoneNumber,
+      'token': token
+    };
+    // Response response = await FirebaseApiService.create().storeToken(body);
+    // print(response.base);
   }
 }
