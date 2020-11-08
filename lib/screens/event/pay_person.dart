@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ttmm/models/transaction.dart';
 import 'package:ttmm/models/userdata.dart';
+import 'package:ttmm/services/firebase_api_service.dart';
 import 'package:ttmm/services/group_api_service.dart';
 import 'package:ttmm/services/transaction_api_service.dart';
 import 'package:ttmm/services/user_api_service.dart';
@@ -13,6 +14,7 @@ import 'package:ttmm/shared/loading.dart';
 import 'package:qrscan/qrscan.dart' as scanner;
 import 'package:ttmm/shared/shared_functions.dart';
 import 'package:upi_india/upi_india.dart';
+import 'package:uuid/uuid.dart';
 import 'package:validators/validators.dart';
 
 class PayPerson extends StatefulWidget {
@@ -115,12 +117,12 @@ class _PayPersonState extends State<PayPerson>
                         trailing: Text(map['amount'].toString()),
                         onTap: () async {
                           if (map['user'].upiId == null) {
-                            showPaymentModeDialog(map['user'].phoneNumber);
+                            showPaymentModeDialog(map['user']);
                           } else {
                             print('UPI ID IS ${map['user'].upiId}');
                             _upiId = map['user'].upiId;
                             _name = map['user'].name;
-                            showPaymentModeDialog(map['user'].phoneNumber);
+                            showPaymentModeDialog(map['user']);
                           }
                         },
                       );
@@ -154,16 +156,17 @@ class _PayPersonState extends State<PayPerson>
                         return ListTile(
                           title: Text(user.name),
                           leading: CircleAvatar(
-                            backgroundImage: Image.network(user.profileUrl).image,
+                            backgroundImage:
+                                Image.network(user.profileUrl).image,
                           ),
                           onTap: () async {
                             if (user.upiId == null) {
-                              showPaymentModeDialog(user.phoneNumber);
+                              showPaymentModeDialog(user);
                             } else {
                               print('UPI ID IS ${user.upiId}');
                               _upiId = user.upiId;
                               _name = user.name;
-                              showPaymentModeDialog(user.phoneNumber);
+                              showPaymentModeDialog(user);
                             }
                           },
                         );
@@ -234,7 +237,7 @@ class _PayPersonState extends State<PayPerson>
     print(_phone);
   }
 
-  showPaymentModeDialog(String phoneNumber) {
+  showPaymentModeDialog(UserData user) {
     showDialog(
         barrierDismissible: false,
         context: _scaffoldKey.currentContext,
@@ -269,7 +272,26 @@ class _PayPersonState extends State<PayPerson>
                             'assets/images/cash.png',
                             scale: 5,
                           ),
-                          onPressed: null,
+                          onPressed: () async {
+                            if (_formKey.currentState.validate()) {
+                              Map<String, dynamic> body = {
+                                "phoneNumber": _phone,
+                                "to": user.phoneNumber,
+                                "amount": _amount,
+                                "paymentId": Uuid().v1(),
+                                "eventId": widget.eventId
+                              };
+                              Response response =
+                                  await FirebaseApiService.create()
+                                      .sendCashConfirmation(body)
+                                      .then((value) {
+                                Navigator.of(context).pop();
+                                Navigator.of(context).pop();
+                              });
+
+                              print(response.body);
+                            }
+                          },
                         ),
                         FlatButton(
                           child: Image.asset(
@@ -298,7 +320,7 @@ class _PayPersonState extends State<PayPerson>
                               }
                               _isUpi = true;
                               Navigator.pop(context);
-                              showAppsBottomSheet(phoneNumber);
+                              showAppsBottomSheet(user.phoneNumber);
                             }
                           },
                         ),

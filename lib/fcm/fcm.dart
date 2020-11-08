@@ -1,35 +1,55 @@
-// import 'dart:io';
+import 'dart:io';
 
-// import 'package:firebase_messaging/firebase_messaging.dart';
-// import 'package:flutter/cupertino.dart';
-// import 'package:ttmm/fcm/notification_manager.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:ttmm/fcm/notification_manager.dart';
 
-// class Fcm {
-//   static final FirebaseMessaging _fcm = FirebaseMessaging();
+class Fcm {
+  static final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
 
-  
-//   static initConfigure() {
-//     if (Platform.isIOS) _iosPermission();
+  static initConfigure(BuildContext context) {
+    if (Platform.isIOS) _iosPermission();
 
-//     _fcm.requestNotificationPermissions();
-//     _fcm.autoInitEnabled();
+    _firebaseMessaging.requestNotificationPermissions();
+    _firebaseMessaging.autoInitEnabled();
 
-//     _fcm.configure(
-//         onMessage: (Map<String, dynamic> message) async =>
-//             NotificationManger.handleNotificationMsg(message),
-//         onLaunch: (Map<String, dynamic> message) async =>
-//             NotificationManger.handleDataMsg(message['data']),
-//         onResume: (Map<String, dynamic> message) async =>
-//             NotificationManger.handleDataMsg(message['data']),
-//         onBackgroundMessage: NotificationManger.myBackgroundMessageHandler
-//         );
-//   }
+    _firebaseMessaging.configure(
+      onMessage: (Map<String, dynamic> message) async {
+        NotificationManger.showNotification(message);
+        print('onMessage $message');
+        NotificationManger.handleNotificationMsg(message);
+      },
+      onLaunch: (Map<String, dynamic> message) async {
+        print('ON LAUNCH');
+        NotificationManger.handleDataMsg(message['data']);
+      },
+      onResume: (Map<String, dynamic> message) async {
+        WidgetsFlutterBinding.ensureInitialized();
 
-//   static _iosPermission() {
-//     _fcm.requestNotificationPermissions(
-//         IosNotificationSettings(sound: true, badge: true, alert: true));
-//     _fcm.onIosSettingsRegistered.listen((IosNotificationSettings settings) {
-//       print("Settings registered: $settings");
-//     });
-//   }
-// }
+        print('ON RESUME');
+        print(message);
+        showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: Text('Alert'),
+                content: Text('ON RESUME'),
+              );
+            });
+        NotificationManger.handleDataMsg(message['data']);
+      },
+      onBackgroundMessage:
+          Platform.isIOS ? null : NotificationManger.myBackgroundMessageHandler,
+    );
+  }
+
+  static _iosPermission() {
+    _firebaseMessaging.requestNotificationPermissions(
+        IosNotificationSettings(sound: true, badge: true, alert: true));
+    _firebaseMessaging.onIosSettingsRegistered
+        .listen((IosNotificationSettings settings) {
+      print("Settings registered: $settings");
+    });
+  }
+}

@@ -1,4 +1,5 @@
 import 'package:chopper/chopper.dart';
+import 'package:ttmm/shared/constants.dart';
 
 part 'firebase_api_service.chopper.dart';
 
@@ -10,12 +11,15 @@ abstract class FirebaseApiService extends ChopperService {
   @Post(path: '/storeToken')
   Future<Response> storeToken(@Body() Map<String, dynamic> body);
 
-  @Get(path: '/sendNotification')
-  Future<Response> sendNotification(@Query('phoneNumber') String phoneNumber);
+  @Post(path: '/sendCashConfirmation')
+  Future<Response> sendCashConfirmation(@Body() Map<String, dynamic> body);
+
+  @Post(path: '/notGotCash')
+  Future<Response> sendNotGotCash(@Query('paymentId') String paymentId);
 
   static FirebaseApiService create() {
     final client = ChopperClient(
-        baseUrl: 'https://ttmm-pp.herokuapp.com/api',
+        baseUrl: DB_URL,
         services: [_$FirebaseApiService()],
         converter: JsonConverter(),
         interceptors: [HttpLoggingInterceptor()]);

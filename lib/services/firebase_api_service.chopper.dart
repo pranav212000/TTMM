@@ -25,10 +25,18 @@ class _$FirebaseApiService extends FirebaseApiService {
   }
 
   @override
-  Future<Response<dynamic>> sendNotification(String phoneNumber) {
-    final $url = '/firebase/sendNotification';
-    final $params = <String, dynamic>{'phoneNumber': phoneNumber};
-    final $request = Request('GET', $url, client.baseUrl, parameters: $params);
+  Future<Response<dynamic>> sendCashConfirmation(Map<String, dynamic> body) {
+    final $url = '/firebase/sendCashConfirmation';
+    final $body = body;
+    final $request = Request('POST', $url, client.baseUrl, body: $body);
+    return client.send<dynamic, dynamic>($request);
+  }
+
+  @override
+  Future<Response<dynamic>> sendNotGotCash(String paymentId) {
+    final $url = '/firebase/notGotCash';
+    final $params = <String, dynamic>{'paymentId': paymentId};
+    final $request = Request('POST', $url, client.baseUrl, parameters: $params);
     return client.send<dynamic, dynamic>($request);
   }
 }

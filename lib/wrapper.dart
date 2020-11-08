@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:chopper/chopper.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebaseAuth;
@@ -8,6 +10,21 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ttmm/fcm/fcm.dart';
 import 'package:ttmm/fcm/notification_manager.dart';
+
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import 'package:ttmm/screens/contacts/contacts_page.dart';
+import 'package:ttmm/screens/home/home.dart';
+
+import 'package:ttmm/services/auth.dart';
+import 'package:ttmm/shared/error.dart';
+import 'package:ttmm/shared/loading.dart';
+import 'package:ttmm/wrapper.dart';
+import 'package:logging/logging.dart';
 import 'package:ttmm/models/group.dart';
 import 'package:ttmm/navigator.dart';
 import 'package:ttmm/screens/authenticate/signin.dart';
@@ -26,6 +43,9 @@ class Wrapper extends StatefulWidget {
 }
 
 class _WrapperState extends State<Wrapper> {
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      new FlutterLocalNotificationsPlugin();
+
   Future<List<Group>> getGroups() async {
     print("CURRENT TIME :");
     print(Timestamp.fromDate(DateTime.now()));
@@ -55,16 +75,67 @@ class _WrapperState extends State<Wrapper> {
   @override
   void initState() {
     super.initState();
-    // initFirebase();
   }
 
   void initFirebase() {
-    SchedulerBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      WidgetsFlutterBinding.ensureInitialized();
+
+      final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
+
+      NotificationManger.init(context: context);
+      Fcm.initConfigure(context);
+      // _firebaseMessaging.configure(
+      //   onBackgroundMessage: Platform.isIOS
+      //       ? null
+      //       : NotificationManger.myBackgroundMessageHandler,
+      //   onMessage: (message) async {
+
+      //     print("onMessage: $message");
+      //   },
+      //   onLaunch: (message) async {
+      //     print("onLaunch: $message");
+      //   },
+      //   onResume: (message) async {
+      //     print("onResume: $message");
+      //   },
+      // );
+
+      _firebaseMessaging.getToken().then((String token) {
+        print("Push Messaging token: $token");
+        // Push messaging to this token later
+      });
       // NotificationManger.init(context: context);
 
       // Fcm.initConfigure();
     });
   }
+
+  // Future<String> onSelect(String data) async {
+  //   print("onSelectNotification $data");
+  // }
+
+  // Future<dynamic> myBackgroundMessageHandler(
+  //     Map<String, dynamic> message) async {
+  //   print("myBackgroundMessageHandler message: $message");
+  //   int msgId = int.tryParse(message["data"]["msgId"].toString()) ?? 0;
+  //   print("msgId $msgId");
+  //   // var androidPlatformChannelSpecifics = AndroidNotificationDetails(
+  //   //     'fcm_default_channel', 'fcm_default_channel', 'fcm_default_channel',
+  //   //     color: Colors.blue.shade800,
+  //   //     importance: Importance.max,
+  //   //     priority: Priority.max,
+  //   //     ticker: 'ticker');
+  //   // var iOSPlatformChannelSpecifics = IOSNotificationDetails();
+  //   // var platformChannelSpecifics = NotificationDetails(
+  //   //     android: androidPlatformChannelSpecifics,
+  //   //     iOS: iOSPlatformChannelSpecifics);
+  //   // flutterLocalNotificationsPlugin.show(0, message['notification']['title'],
+  //   //     message["notification"]["body"], platformChannelSpecifics,
+  //   //     payload: "Task");
+  //   _showNotification(message);
+  //   return Future<void>.value();
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -72,6 +143,7 @@ class _WrapperState extends State<Wrapper> {
     if (user == null)
       return SignIn();
     else {
+      initFirebase();
       setSharedPreferences(user);
       return NavigatorPage();
     }
@@ -95,7 +167,7 @@ class _WrapperState extends State<Wrapper> {
       'phoneNumber': user.phoneNumber,
       'token': token
     };
-    // Response response = await FirebaseApiService.create().storeToken(body);
-    // print(response.base);
+    Response response = await FirebaseApiService.create().storeToken(body);
+    print(response.body);
   }
 }

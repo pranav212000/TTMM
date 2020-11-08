@@ -1,4 +1,5 @@
 import 'package:chopper/chopper.dart';
+import 'package:ttmm/shared/constants.dart';
 
 part 'transaction_api_service.chopper.dart';
 
@@ -18,7 +19,7 @@ abstract class TransactionApiService extends ChopperService {
 
   static TransactionApiService create() {
     final client = ChopperClient(
-        baseUrl: 'https://ttmm-pp.herokuapp.com/api',
+        baseUrl: DB_URL,
         services: [_$TransactionApiService()],
         converter: JsonConverter(),
         interceptors: [HttpLoggingInterceptor()]);

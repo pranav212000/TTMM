@@ -1,4 +1,5 @@
 import 'package:chopper/chopper.dart';
+import 'package:ttmm/shared/constants.dart';
 
 part 'event_api_service.chopper.dart';
 
@@ -29,7 +30,7 @@ abstract class EventApiService extends ChopperService {
 
   static EventApiService create() {
     final client = ChopperClient(
-        baseUrl: 'https://ttmm-pp.herokuapp.com/api',
+        baseUrl: DB_URL,
         services: [_$EventApiService()],
         converter: JsonConverter(),
         interceptors: [HttpLoggingInterceptor()]);

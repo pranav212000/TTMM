@@ -1,4 +1,5 @@
 import 'package:chopper/chopper.dart';
+import 'package:ttmm/shared/constants.dart';
 
 part 'order_api_service.chopper.dart';
 
@@ -12,7 +13,7 @@ abstract class OrderApiService extends ChopperService {
 
   static OrderApiService create() {
     final client = ChopperClient(
-        baseUrl: 'https://ttmm-pp.herokuapp.com/api',
+        baseUrl: DB_URL,
         services: [_$OrderApiService()],
         converter: JsonConverter(),
         interceptors: [HttpLoggingInterceptor()]);

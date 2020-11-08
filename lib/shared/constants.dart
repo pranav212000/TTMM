@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ttmm/shared/hex_color.dart';
 
-
-
 void showSnackbar(GlobalKey<ScaffoldState> _scaffoldKey, String text,
     {Color color}) {
   if (color == null) {
@@ -85,3 +83,4 @@ const String to = 'to';
 final TextStyle HINT_STYLE = TextStyle(color: Colors.grey[700]);
 const String RS = "\u20B9";
 const String FCM_TOKEN = 'fcm_token';
+const DB_URL = 'https://ttmm-pp.herokuapp.com/api';

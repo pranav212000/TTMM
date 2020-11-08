@@ -1,4 +1,5 @@
 import 'package:chopper/chopper.dart';
+import 'package:ttmm/shared/constants.dart';
 
 part 'user_api_service.chopper.dart';
 
@@ -33,7 +34,7 @@ abstract class UserApiService extends ChopperService {
 
   static UserApiService create() {
     final client = ChopperClient(
-        baseUrl: 'https://ttmm-pp.herokuapp.com/api',
+        baseUrl: DB_URL,
         services: [_$UserApiService()],
         converter: JsonConverter(),
         interceptors: [HttpLoggingInterceptor()]);
