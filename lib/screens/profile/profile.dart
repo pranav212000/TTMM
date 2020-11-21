@@ -1,6 +1,7 @@
 import 'package:chopper/chopper.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:ttmm/models/given_or_got.dart';
 import 'package:ttmm/models/toGiveOrGet.dart';
 import 'package:ttmm/models/userdata.dart';
 import 'package:ttmm/services/user_api_service.dart';
@@ -18,6 +19,8 @@ class _ProfileState extends State<Profile>
   String _phoneNumber;
   Future _futureUserData;
   Future _futureToGive;
+  Future _futureGot;
+  Future _futureGiven;
   // Future _futureToGive;
   Future _futureToGet;
   TabController _tabController;
@@ -28,6 +31,8 @@ class _ProfileState extends State<Profile>
     // _futureToGive = getUserToGiveOrGets();
     _futureToGet = getUserToGets();
     _futureToGive = getUserToGives();
+    _futureGot = getUserGots();
+    _futureGiven = getUserGivens();
     _tabController = TabController(length: 5, vsync: this, initialIndex: 2);
     _tabController.addListener(_handleTabIndex);
     super.initState();
@@ -95,8 +100,36 @@ class _ProfileState extends State<Profile>
               }
             },
           ),
-          Center(
-            child: Text('ToGet'),
+          FutureBuilder(
+            future: _futureGot,
+            builder: (BuildContext context, AsyncSnapshot snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Center(
+                  child: CircularProgressIndicator(),
+                );
+              } else {
+                return snapshot.data == null
+                    ? Center(
+                        child: Text('Could not get got'),
+                      )
+                    : snapshot.data.length == 0
+                        ? Center(
+                            child: Text('NO gots'),
+                          )
+                        : ListView.builder(
+                            itemCount: snapshot.data.length,
+                            itemBuilder: (BuildContext context, int index) {
+                              GivenOrGot got = snapshot.data[index];
+                              return ListTile(
+                                title: Text(got.name),
+                                // TODO add got from and payment mode in UI
+                                subtitle: Text(got.eventName),
+                                trailing: Text(got.amount.toString()),
+                              );
+                            },
+                          );
+              }
+            },
           ),
           // Center(
           //   child: Text('ToGet'),
@@ -159,33 +192,38 @@ class _ProfileState extends State<Profile>
               }
             },
           ),
-          Center(
-            child: Text('ToGet'),
+          FutureBuilder(
+            future: _futureGiven,
+            builder: (BuildContext context, AsyncSnapshot snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Center(
+                  child: CircularProgressIndicator(),
+                );
+              } else {
+                return snapshot.data == null
+                    ? Center(
+                        child: Text('Could not get given'),
+                      )
+                    : snapshot.data.length == 0
+                        ? Center(
+                            child: Text('NO givens'),
+                          )
+                        : ListView.builder(
+                            itemCount: snapshot.data.length,
+                            itemBuilder: (BuildContext context, int index) {
+                              GivenOrGot given = snapshot.data[index];
+                              return ListTile(
+                                title: Text(given.name),
+                                // TODO add given to and payment mode in UI
+                                subtitle: Text(given.eventName),
+                                trailing: Text(given.amount.toString()),
+                              );
+                            },
+                          );
+              }
+            },
           ),
-          // FutureBuilder(
-          //   future: _futureToGive,
-          //   builder: (BuildContext context, AsyncSnapshot snapshot) {
-          //     if (snapshot.connectionState == ConnectionState.waiting) {
-          //       return Center(
-          //         child: CircularProgressIndicator(),
-          //       );
-          //     } else {
-          //       if(snapshot.data == null)
-          //       return Center(child: Text('No ToGets yet!'),);
-          //       else
-          //       return ListView.builder(
-          //         itemCount: snapshot.data.length,
-          //         itemBuilder: (BuildContext context, int index) {
-          //           ToGiveOrGet toGive = snapshot.data[index];
-          //           return ListTile(
-          //             title: Text(toGive.eventName),
-          //             trailing: Text(toGive.amount.toString()),
-          //           );
-          //         },
-          //       );
-          //     }
-          //   },
-          // ),
+
           FutureBuilder(
             future: _futureToGive,
             builder: (BuildContext context, AsyncSnapshot snapshot) {
@@ -256,7 +294,6 @@ class _ProfileState extends State<Profile>
     return toGives;
   }
 
-// FIXME toGets
   Future getUserToGets() async {
     if (_phoneNumber == null) {
       SharedPreferences preferences = await SharedPreferences.getInstance();
@@ -283,35 +320,64 @@ class _ProfileState extends State<Profile>
       }
     }
 
-
     return toGets;
   }
 
-  // Future getUserGots() async {
-  //   if (_phoneNumber == null) {
-  //     SharedPreferences preferences = await SharedPreferences.getInstance();
-  //     _phoneNumber = preferences.getString(currentPhoneNUmber);
-  //   }
+  Future getUserGots() async {
+    if (_phoneNumber == null) {
+      SharedPreferences preferences = await SharedPreferences.getInstance();
+      _phoneNumber = preferences.getString(currentPhoneNUmber);
+    }
 
-  //   Response response = await UserApiService.create().getUserGots(_phoneNumber);
+    Response response = await UserApiService.create().getUserGots(_phoneNumber);
 
-  //   List<ToGiveOrGet> toGets = new List<ToGiveOrGet>();
-  //   for (Map<String, dynamic> event in response.body) {
-  //     var eventToGets = event['toGet'];
-  //     var eventName = event['eventName'];
-  //     var eventId = event['eventId'];
-  //     for (Map<String, dynamic> eventToGet in eventToGets) {
-  //       ToGiveOrGet toGet = ToGiveOrGet.fromJson(eventToGet);
-  //       Response response =
-  //           await UserApiService.create().getUser(toGet.phoneNumber);
-  //       UserData user = UserData.fromJson(response.body);
-  //       toGet.name = user.name;
-  //       toGet.eventName = eventName;
-  //       toGet.eventId = eventId;
-  //       toGets.add(toGet);
-  //     }
-  //   }
-  // }
+    List<GivenOrGot> gots = new List<GivenOrGot>();
+    for (Map<String, dynamic> event in response.body) {
+      var eventGots = event['got'];
+      var eventName = event['eventName'];
+      var eventId = event['eventId'];
+      for (Map<String, dynamic> eventGot in eventGots) {
+        GivenOrGot got = GivenOrGot.fromJson(eventGot);
+        Response response =
+            await UserApiService.create().getUser(got.phoneNumber);
+        UserData user = UserData.fromJson(response.body);
+        got.name = user.name;
+        got.eventName = eventName;
+        got.eventId = eventId;
+        gots.add(got);
+      }
+    }
+
+    return gots;
+  }
+
+  Future getUserGivens() async {
+    if (_phoneNumber == null) {
+      SharedPreferences preferences = await SharedPreferences.getInstance();
+      _phoneNumber = preferences.getString(currentPhoneNUmber);
+    }
+
+    Response response = await UserApiService.create().getUserGivens(_phoneNumber);
+
+    List<GivenOrGot> givens = new List<GivenOrGot>();
+    for (Map<String, dynamic> event in response.body) {
+      var eventGivens = event['given'];
+      var eventName = event['eventName'];
+      var eventId = event['eventId'];
+      for (Map<String, dynamic> eventGiven in eventGivens) {
+        GivenOrGot given = GivenOrGot.fromJson(eventGiven);
+        Response response =
+            await UserApiService.create().getUser(given.phoneNumber);
+        UserData user = UserData.fromJson(response.body);
+        given.name = user.name;
+        given.eventName = eventName;
+        given.eventId = eventId;
+        givens.add(given);
+      }
+    }
+
+    return givens;
+  }
 
   void _handleTabIndex() {
     setState(() {});

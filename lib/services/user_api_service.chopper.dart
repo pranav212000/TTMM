@@ -86,4 +86,12 @@ class _$UserApiService extends UserApiService {
     final $request = Request('GET', $url, client.baseUrl, parameters: $params);
     return client.send<dynamic, dynamic>($request);
   }
+
+  @override
+  Future<Response<dynamic>> getUserGivens(String phoneNumber) {
+    final $url = '/user/given';
+    final $params = <String, dynamic>{'phoneNumber': phoneNumber};
+    final $request = Request('GET', $url, client.baseUrl, parameters: $params);
+    return client.send<dynamic, dynamic>($request);
+  }
 }
