@@ -6,6 +6,7 @@ part 'toGiveOrGet.g.dart';
 @JsonSerializable()
 class ToGiveOrGet {
   String phoneNumber;
+  String name;
   int amount;
   String eventId;
   String eventName;
@@ -13,6 +14,7 @@ class ToGiveOrGet {
   ToGiveOrGet(
       {@required this.phoneNumber,
       @required this.amount,
+      this.name,
       this.eventId,
       this.eventName});
 

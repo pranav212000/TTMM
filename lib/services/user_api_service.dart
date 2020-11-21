@@ -32,6 +32,9 @@ abstract class UserApiService extends ChopperService {
   @Get(path: '/toGet')
   Future<Response> getUserToGets(@Query('phoneNumber') String phoneNumber);
 
+  @Get(path: '/got')
+  Future<Response> getUserGots(@Query(phoneNumber) String phoneNumber);
+
   static UserApiService create() {
     final client = ChopperClient(
         baseUrl: DB_URL,
