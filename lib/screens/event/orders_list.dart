@@ -163,13 +163,18 @@ class OrderListState extends State<OrderList> {
                                     labelText: 'Quantity',
                                     hintText: 'Quantity',
                                     hintStyle: HINT_STYLE),
+                                keyboardType: TextInputType.number,
                                 validator: (val) => val.isEmpty
                                     ? 'Enter quantity'
                                     : (!isNumeric(val)
                                         ? 'Enter a number'
                                         : null),
                                 onChanged: (val) {
-                                  if (isNumeric(val))
+                                  if (val.isEmpty) {
+                                    setState(() {
+                                      quantity = 0;
+                                    });
+                                  } else if (isNumeric(val))
                                     setState(() {
                                       quantity = int.parse(val);
                                     });
@@ -184,13 +189,18 @@ class OrderListState extends State<OrderList> {
                                     labelText: 'Cost',
                                     hintText: 'Cost',
                                     hintStyle: HINT_STYLE),
+                                keyboardType: TextInputType.number,
                                 validator: (val) => val.isEmpty
                                     ? 'Enter cost'
                                     : !isNumeric(val)
                                         ? 'Enter a number'
                                         : null,
                                 onChanged: (val) {
-                                  if (isNumeric(val))
+                                  if (val.isEmpty) {
+                                    setState(() {
+                                      cost = 0;
+                                    });
+                                  } else if (isNumeric(val))
                                     setState(() {
                                       cost = int.parse(val);
                                     });

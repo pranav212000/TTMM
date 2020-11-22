@@ -1,6 +1,5 @@
 import 'package:chopper/chopper.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebaseAuth;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -91,7 +90,6 @@ class _HomeState extends State<Home> with AutomaticKeepAliveClientMixin<Home> {
   @override
   void initState() {
     super.initState();
-
     _future = _getUserData();
   }
 
@@ -99,6 +97,10 @@ class _HomeState extends State<Home> with AutomaticKeepAliveClientMixin<Home> {
     SharedPreferences preferences = await SharedPreferences.getInstance();
     String phoneNumber = preferences.getString(currentPhoneNUmber);
 
+    if (phoneNumber.isEmpty)
+      print('Could not get the phone number before making the api call');
+    else
+      print('GOt the phone number');
     Response response = await UserApiService.create().getUser(phoneNumber);
 
     if (response.statusCode == 200) {
@@ -128,21 +130,21 @@ class _HomeState extends State<Home> with AutomaticKeepAliveClientMixin<Home> {
               key: _scaffoldKey,
               appBar: AppBar(
                 title: Text('Home'),
-                actions: <Widget>[
-                  FlatButton.icon(
-                      onPressed: () {
-                        showSnackbar(_scaffoldKey, 'Signing out');
-                        AuthService().signout();
-                      },
-                      icon: Icon(
-                        Icons.exit_to_app,
-                        color: Colors.white,
-                      ),
-                      label: Text(
-                        'Signout',
-                        style: TextStyle(color: Colors.white),
-                      ))
-                ],
+                // actions: <Widget>[
+                //   FlatButton.icon(
+                //       onPressed: () {
+                //         showSnackbar(_scaffoldKey, 'Signing out');
+                //         AuthService().signout();
+                //       },
+                //       icon: Icon(
+                //         Icons.exit_to_app,
+                //         color: Colors.white,
+                //       ),
+                //       label: Text(
+                //         'Signout',
+                //         style: TextStyle(color: Colors.white),
+                //       ))
+                // ],
               ),
               drawer: MyDrawer(userData: snapshot.data),
               floatingActionButton: FloatingActionButton.extended(

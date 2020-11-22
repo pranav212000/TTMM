@@ -84,3 +84,4 @@ final TextStyle HINT_STYLE = TextStyle(color: Colors.grey[700]);
 const String RS = "\u20B9";
 const String FCM_TOKEN = 'fcm_token';
 const DB_URL = 'https://ttmm-pp.herokuapp.com/api';
+const String isOneSyncComplete = 'isOneSyncComplete';

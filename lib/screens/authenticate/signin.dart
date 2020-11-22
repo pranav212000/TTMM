@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ttmm/shared/constants.dart';
 import 'package:ttmm/screens/authenticate/enterOTP.dart';
 
@@ -88,8 +89,13 @@ class SignIn extends StatelessWidget {
                       Container(
                         margin: EdgeInsets.only(top: 50),
                         child: RaisedButton(
-                          onPressed: () {
+                          onPressed: () async {
                             if (_formKey.currentState.validate()) {
+                              SharedPreferences preferences =
+                                  await SharedPreferences.getInstance();
+
+                              preferences.setString(currentPhoneNUmber, _phone);
+
                               Navigator.push(
                                   context,
                                   MaterialPageRoute(

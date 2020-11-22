@@ -102,10 +102,16 @@ class _EventHomeState extends State<EventHome> {
               ),
               body: Column(
                 children: [
+                  SizedBox(
+                    height: 10,
+                  ),
                   Expanded(
                     flex: 5,
                     child: OrderList(
                         eventId: snapshot.data.eventId, key: _orderListKey),
+                  ),
+                  SizedBox(
+                    height: 50,
                   ),
                 ],
               ),
@@ -240,11 +246,16 @@ class _EventHomeState extends State<EventHome> {
                                   labelText: 'Quantity',
                                   hintText: 'Quantity',
                                   hintStyle: HINT_STYLE),
+                              keyboardType: TextInputType.number,
                               validator: (val) => val.isEmpty
                                   ? 'Enter quantity'
                                   : (!isNumeric(val) ? 'Enter a number' : null),
                               onChanged: (val) {
-                                if (isNumeric(val))
+                                if (val.isEmpty) {
+                                  setState(() {
+                                    _quantity = 0;
+                                  });
+                                } else if (isNumeric(val))
                                   setState(() {
                                     _quantity = int.parse(val);
                                   });
@@ -258,13 +269,18 @@ class _EventHomeState extends State<EventHome> {
                                   labelText: 'Cost',
                                   hintText: 'Cost',
                                   hintStyle: HINT_STYLE),
+                              keyboardType: TextInputType.number,
                               validator: (val) => val.isEmpty
                                   ? 'Enter cost'
                                   : !isNumeric(val)
                                       ? 'Enter a number'
                                       : null,
                               onChanged: (val) {
-                                if (isNumeric(val))
+                                if (val.isEmpty) {
+                                  setState(() {
+                                    _cost = 0;
+                                  });
+                                } else if (isNumeric(val))
                                   setState(() {
                                     _cost = int.parse(val);
                                   });
@@ -340,6 +356,8 @@ class _EventHomeState extends State<EventHome> {
       _orderListKey.currentState.refreshList(order);
 
       showSnackbar(_scaffoldKey, 'SUCCESS');
+      _quantity = 0;
+      _cost = 0;
       Navigator.of(context).pop();
     } else {
       showSnackbar(_scaffoldKey, 'ERROR');

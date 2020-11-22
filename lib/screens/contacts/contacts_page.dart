@@ -29,6 +29,7 @@ class _ContactsPageState extends State<ContactsPage>
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   bool _isSyncComplete = false;
   bool _isLoadingComplete = false;
+  bool _isOneSyncDone = false;
   TabController _tabController;
   final ScrollController _inviteController = ScrollController();
   final ScrollController _registeredController = ScrollController();
@@ -39,6 +40,7 @@ class _ContactsPageState extends State<ContactsPage>
     getContactsFromFloor();
     getContacts();
     getUserCredentials();
+    getOneSyncComplete();
     super.initState();
     _tabController = TabController(length: 2, vsync: this, initialIndex: 0);
     _tabController.addListener(_handleTabIndex);
@@ -53,6 +55,14 @@ class _ContactsPageState extends State<ContactsPage>
 
   void _handleTabIndex() {
     setState(() {});
+  }
+
+  Future getOneSyncComplete() async {
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    setState(() {
+      _isOneSyncDone = preferences.getBool(isOneSyncComplete);
+      if (_isOneSyncDone == null) _isOneSyncDone = false;
+    });
   }
 
   Future getUserCredentials() async {
@@ -108,9 +118,12 @@ class _ContactsPageState extends State<ContactsPage>
       }
     }
 
-    setState(() {
+    setState(() async {
       print('Sync Complete');
       showSnackbar(_scaffoldKey, 'Sync Complete');
+      SharedPreferences preferences = await SharedPreferences.getInstance();
+      preferences.setBool(isOneSyncComplete, true);
+      _isOneSyncDone = true;
       _isSyncComplete = true;
       _isLoadingComplete = false;
       getContactsFromFloor();
@@ -134,7 +147,8 @@ class _ContactsPageState extends State<ContactsPage>
     final personDao = database.personDao;
     // List<Person> persons = await personDao.findAllPersons();
     _registeredContacts = await personDao.registeredPeople();
-    _registeredContacts.removeWhere((person) => person.phoneNumber == _phoneNumber);
+    _registeredContacts
+        .removeWhere((person) => person.phoneNumber == _phoneNumber);
     print('GOT REGISTERED');
     _inviteContacts = await personDao.unregisteredPeople();
     print('GOT INVITE');
@@ -167,13 +181,13 @@ class _ContactsPageState extends State<ContactsPage>
         ),
       ),
       floatingActionButton: Visibility(
-        visible: _isSyncComplete || _isLoadingComplete,
+        visible: _isSyncComplete || (_isLoadingComplete && _isOneSyncDone),
         child: _fabs(),
       ),
       body: TabBarView(
         controller: _tabController,
         children: [
-          _isSyncComplete || _isLoadingComplete
+          _isSyncComplete || (_isLoadingComplete && _isOneSyncDone)
               //Build a list view of all contacts, displaying their avatar and
               // display name
               ? (_registeredContacts.length != 0
@@ -224,9 +238,10 @@ class _ContactsPageState extends State<ContactsPage>
                       child: Text('No User Found'),
                     ))
               : Center(child: CircularProgressIndicator()),
-          _isSyncComplete || _isLoadingComplete
+          _isSyncComplete || (_isLoadingComplete && _isOneSyncDone)
               ? ((_inviteContacts.length != 0 &&
-                      (_isSyncComplete || _isLoadingComplete))
+                      (_isSyncComplete ||
+                          (_isLoadingComplete && _isOneSyncDone)))
                   ? DraggableScrollbar.arrows(
                       controller: _inviteController,
                       child: ListView.builder(
