@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ttmm/models/order.dart';
+import 'package:ttmm/screens/event/add_edit_order.dart';
 import 'package:ttmm/services/event_api_service.dart';
 import 'package:ttmm/services/order_api_service.dart';
 import 'package:ttmm/shared/constants.dart';
@@ -92,6 +93,15 @@ class OrderListState extends State<OrderList> {
       });
   }
 
+  void updateOrderList(Order order) {
+    setState(() {
+      _orders[_orders.indexWhere(
+          (listorder) => listorder.orderId == order.orderId)] = order;
+      Scaffold.of(context)
+          .showSnackBar(SnackBar(content: Text('Order updated')));
+    });
+  }
+
   Widget _buildItem(Order order, Animation animation) {
     return SlideTransition(
       position: animation.drive(Tween<Offset>(
@@ -114,182 +124,183 @@ class OrderListState extends State<OrderList> {
         ],
         secondaryActions: [
           IconSlideAction(
-            caption: 'Edit',
-            color: Colors.blueAccent,
-            icon: Icons.edit,
-            onTap: () =>
-                updateOrder(order, order.itemName, order.quantity, order.cost),
-          ),
+              caption: 'Edit',
+              color: Colors.blueAccent,
+              icon: Icons.edit,
+              onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) => AddEditOrder(order: order)))
+              // updateOrder(order, order.itemName, order.quantity, order.cost),
+              ),
         ],
       ),
     );
   }
 
-  void updateOrder(Order order, String item, int quantity, int cost) {
-    bool _isLoading = false;
-    showDialog(
-        barrierDismissible: false,
-        context: context,
-        builder: (_) {
-          return StatefulBuilder(
-            builder: (BuildContext context, setState) {
-              return Stack(children: [
-                AlertDialog(
-                  title: Text('Enter order'),
-                  content: SingleChildScrollView(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Form(
-                          key: _formKey,
-                          child: Column(
-                            children: [
-                              TextFormField(
-                                initialValue: item,
-                                decoration: InputDecoration(
-                                    labelText: 'Order',
-                                    hintText: 'Order',
-                                    hintStyle: HINT_STYLE),
-                                validator: (val) =>
-                                    val.isEmpty ? 'Enter order name' : null,
-                                onChanged: (val) => item = val,
-                              ),
-                              SizedBox(
-                                height: 10.0,
-                              ),
-                              TextFormField(
-                                initialValue: quantity.toString(),
-                                decoration: InputDecoration(
-                                    labelText: 'Quantity',
-                                    hintText: 'Quantity',
-                                    hintStyle: HINT_STYLE),
-                                keyboardType: TextInputType.number,
-                                validator: (val) => val.isEmpty
-                                    ? 'Enter quantity'
-                                    : (!isNumeric(val)
-                                        ? 'Enter a number'
-                                        : null),
-                                onChanged: (val) {
-                                  if (val.isEmpty) {
-                                    setState(() {
-                                      quantity = 0;
-                                    });
-                                  } else if (isNumeric(val))
-                                    setState(() {
-                                      quantity = int.parse(val);
-                                    });
-                                },
-                              ),
-                              SizedBox(
-                                height: 10.0,
-                              ),
-                              TextFormField(
-                                initialValue: cost.toString(),
-                                decoration: InputDecoration(
-                                    labelText: 'Cost',
-                                    hintText: 'Cost',
-                                    hintStyle: HINT_STYLE),
-                                keyboardType: TextInputType.number,
-                                validator: (val) => val.isEmpty
-                                    ? 'Enter cost'
-                                    : !isNumeric(val)
-                                        ? 'Enter a number'
-                                        : null,
-                                onChanged: (val) {
-                                  if (val.isEmpty) {
-                                    setState(() {
-                                      cost = 0;
-                                    });
-                                  } else if (isNumeric(val))
-                                    setState(() {
-                                      cost = int.parse(val);
-                                    });
-                                },
-                              ),
-                              SizedBox(
-                                height: 10.0,
-                              ),
-                              Visibility(
-                                  visible:
-                                      quantity == 0 || cost == 0 ? false : true,
-                                  child: Text(
-                                      'Total Cost = ' +
-                                          RS +
-                                          '${quantity * cost}',
-                                      style: GoogleFonts.josefinSans())),
-                              SizedBox(
-                                height: 10.0,
-                              ),
-                              RaisedButton(
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10.0)),
-                                color: Colors.orange,
-                                onPressed: _isLoading
-                                    ? null
-                                    : () {
-                                        if (_formKey.currentState.validate()) {
-                                          setState(() {
-                                            _isLoading = true;
-                                          });
-                                          postUpdate(
-                                              order, item, quantity, cost);
-                                        }
-                                      },
-                                child: Text('Update'),
-                              )
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                Visibility(
-                    visible: _isLoading,
-                    child: Container(
-                      width: double.infinity,
-                      height: double.infinity,
-                      decoration: BoxDecoration(color: Colors.black38),
-                      child: Center(
-                        child: CircularProgressIndicator(),
-                      ),
-                    ))
-              ]);
-            },
-          );
-        });
-  }
+  // void updateOrder(Order order, String item, int quantity, int cost) {
+  //   bool _isLoading = false;
+  //   showDialog(
+  //       barrierDismissible: false,
+  //       context: context,
+  //       builder: (_) {
+  //         return StatefulBuilder(
+  //           builder: (BuildContext context, setState) {
+  //             return Stack(children: [
+  //               AlertDialog(
+  //                 title: Text('Enter order'),
+  //                 content: SingleChildScrollView(
+  //                   child: Column(
+  //                     mainAxisSize: MainAxisSize.min,
+  //                     children: [
+  //                       Form(
+  //                         key: _formKey,
+  //                         child: Column(
+  //                           children: [
+  //                             TextFormField(
+  //                               initialValue: item,
+  //                               decoration: InputDecoration(
+  //                                   labelText: 'Order',
+  //                                   hintText: 'Order',
+  //                                   hintStyle: HINT_STYLE),
+  //                               validator: (val) =>
+  //                                   val.isEmpty ? 'Enter order name' : null,
+  //                               onChanged: (val) => item = val,
+  //                             ),
+  //                             SizedBox(
+  //                               height: 10.0,
+  //                             ),
+  //                             TextFormField(
+  //                               initialValue: quantity.toString(),
+  //                               decoration: InputDecoration(
+  //                                   labelText: 'Quantity',
+  //                                   hintText: 'Quantity',
+  //                                   hintStyle: HINT_STYLE),
+  //                               keyboardType: TextInputType.number,
+  //                               validator: (val) => val.isEmpty
+  //                                   ? 'Enter quantity'
+  //                                   : (!isNumeric(val)
+  //                                       ? 'Enter a number'
+  //                                       : null),
+  //                               onChanged: (val) {
+  //                                 if (val.isEmpty) {
+  //                                   setState(() {
+  //                                     quantity = 0;
+  //                                   });
+  //                                 } else if (isNumeric(val))
+  //                                   setState(() {
+  //                                     quantity = int.parse(val);
+  //                                   });
+  //                               },
+  //                             ),
+  //                             SizedBox(
+  //                               height: 10.0,
+  //                             ),
+  //                             TextFormField(
+  //                               initialValue: cost.toString(),
+  //                               decoration: InputDecoration(
+  //                                   labelText: 'Cost',
+  //                                   hintText: 'Cost',
+  //                                   hintStyle: HINT_STYLE),
+  //                               keyboardType: TextInputType.number,
+  //                               validator: (val) => val.isEmpty
+  //                                   ? 'Enter cost'
+  //                                   : !isNumeric(val)
+  //                                       ? 'Enter a number'
+  //                                       : null,
+  //                               onChanged: (val) {
+  //                                 if (val.isEmpty) {
+  //                                   setState(() {
+  //                                     cost = 0;
+  //                                   });
+  //                                 } else if (isNumeric(val))
+  //                                   setState(() {
+  //                                     cost = int.parse(val);
+  //                                   });
+  //                               },
+  //                             ),
+  //                             SizedBox(
+  //                               height: 10.0,
+  //                             ),
+  //                             Visibility(
+  //                                 visible:
+  //                                     quantity == 0 || cost == 0 ? false : true,
+  //                                 child: Text(
+  //                                     'Total Cost = ' +
+  //                                         RS +
+  //                                         '${quantity * cost}',
+  //                                     style: GoogleFonts.josefinSans())),
+  //                             SizedBox(
+  //                               height: 10.0,
+  //                             ),
+  //                             RaisedButton(
+  //                               shape: RoundedRectangleBorder(
+  //                                   borderRadius: BorderRadius.circular(10.0)),
+  //                               color: Colors.orange,
+  //                               onPressed: _isLoading
+  //                                   ? null
+  //                                   : () {
+  //                                       if (_formKey.currentState.validate()) {
+  //                                         setState(() {
+  //                                           _isLoading = true;
+  //                                         });
+  //                                         postUpdate(
+  //                                             order, item, quantity, cost);
+  //                                       }
+  //                                     },
+  //                               child: Text('Update'),
+  //                             )
+  //                           ],
+  //                         ),
+  //                       ),
+  //                     ],
+  //                   ),
+  //                 ),
+  //               ),
+  //               Visibility(
+  //                   visible: _isLoading,
+  //                   child: Container(
+  //                     width: double.infinity,
+  //                     height: double.infinity,
+  //                     decoration: BoxDecoration(color: Colors.black38),
+  //                     child: Center(
+  //                       child: CircularProgressIndicator(),
+  //                     ),
+  //                   ))
+  //             ]);
+  //           },
+  //         );
+  //       });
+  // }
 
-  Future postUpdate(Order order, String item, int quantity, int cost) async {
-    String orderId = order.orderId;
-    order.itemName = item;
-    order.quantity = quantity;
-    order.cost = cost;
-    order.totalCost = cost * quantity;
-    if (order.updatedAt == null || order.createdAt == null) {
-      order.createdAt = DateTime.now();
-      order.updatedAt = DateTime.now();
-    }
+  // Future postUpdate(Order order, String item, int quantity, int cost) async {
+  //   String orderId = order.orderId;
+  //   order.itemName = item;
+  //   order.quantity = quantity;
+  //   order.cost = cost;
+  //   order.totalCost = cost * quantity;
+  //   if (order.updatedAt == null || order.createdAt == null) {
+  //     order.createdAt = DateTime.now();
+  //     order.updatedAt = DateTime.now();
+  //   }
 
-    Response response =
-        await OrderApiService.create().updateOrder(orderId, order.toJson());
-    Navigator.of(context).pop();
+  //   Response response =
+  //       await OrderApiService.create().updateOrder(orderId, order.toJson());
+  //   Navigator.of(context).pop();
 
-    if (response.statusCode == 200) {
-      if (response.body != null) {
-        order = Order.fromJson(response.body);
-        setState(() {
-          _orders[_orders.indexWhere(
-              (listorder) => listorder.orderId == order.orderId)] = order;
-          Scaffold.of(context)
-              .showSnackBar(SnackBar(content: Text('Order updated')));
-        });
-      }
-    } else {
-      Scaffold.of(context)
-          .showSnackBar(SnackBar(content: Text('Could not update Order')));
-    }
-  }
+  //   if (response.statusCode == 200) {
+  //     if (response.body != null) {
+  //       order = Order.fromJson(response.body);
+  //       // setState(() {
+  //       //   _orders[_orders.indexWhere(
+  //       //       (listorder) => listorder.orderId == order.orderId)] = order;
+  //       //   Scaffold.of(context)
+  //       //       .showSnackBar(SnackBar(content: Text('Order updated')));
+  //       // });
+  //     }
+  //   } else {
+  //     Scaffold.of(context)
+  //         .showSnackBar(SnackBar(content: Text('Could not update Order')));
+  //   }
+  // }
 
   void deleteOrder(Order order) {
     showDialog(

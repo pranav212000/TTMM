@@ -17,7 +17,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:ttmm/models/order.dart';
 import 'package:ttmm/screens/contacts/contacts_page.dart';
+import 'package:ttmm/screens/event/add_edit_order.dart';
 import 'package:ttmm/screens/home/home.dart';
 
 import 'package:ttmm/services/auth.dart';
@@ -146,6 +148,22 @@ class _WrapperState extends State<Wrapper> {
       initFirebase();
       setSharedPreferences(user);
       return NavigatorPage();
+      // return AddEditOrder(
+      //   //   order: Order.fromJson({
+      //   // "orderId": "1",
+      //   // "eventId": "test1",
+      //   // "members": [
+      //   //   // {"phoneNumber": "+911234567891", "quantity": 2},
+      //   //   // {"phoneNumber": "+911234567890", "quantity": 2}
+      //   // ],
+      //   // "creator": " +911234567891",
+      //   // "itemName": "Pizza",
+      //   // "quantity": 4,
+      //   // "cost": 300,
+      //   // "totalCost": 600,
+      //   // }));
+      //   eventId: "test1",
+      // );
     }
 // // TODO fix this jugad!
 //     else {

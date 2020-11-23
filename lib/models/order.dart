@@ -7,22 +7,24 @@ part 'order.g.dart';
 class Order {
   String orderId;
   String eventId;
-  List<dynamic> phoneNumber;
   String itemName;
   int quantity;
   int cost;
   int totalCost;
+  String creator;
   DateTime createdAt;
   DateTime updatedAt;
+  List<Map<String, dynamic>> members;
 
   Order(
       {@required this.orderId,
       @required this.eventId,
-      @required this.phoneNumber,
+      @required this.members,
       @required this.itemName,
       @required this.quantity,
       @required this.cost,
       @required this.totalCost,
+      this.creator,
       this.createdAt,
       this.updatedAt});
 

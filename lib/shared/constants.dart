@@ -85,3 +85,41 @@ const String RS = "\u20B9";
 const String FCM_TOKEN = 'fcm_token';
 const DB_URL = 'https://ttmm-pp.herokuapp.com/api';
 const String isOneSyncComplete = 'isOneSyncComplete';
+
+var inputDecoration = InputDecoration(
+  labelText: 'Order',
+  hintText: 'Order',
+  hintStyle: HINT_STYLE,
+  // contentPadding: EdgeInsets.symmetric(horizontal: 30),
+  // isDense: false,
+  disabledBorder: OutlineInputBorder(
+    borderRadius: BorderRadius.circular(25.0),
+    borderSide: BorderSide(
+      color: Colors.grey,
+    ),
+  ),
+  focusedBorder: OutlineInputBorder(
+    borderRadius: BorderRadius.circular(25.0),
+    borderSide: BorderSide(
+      color: Colors.tealAccent,
+    ),
+  ),
+  enabledBorder: OutlineInputBorder(
+    borderRadius: BorderRadius.circular(25.0),
+    borderSide: BorderSide(
+      color: Colors.grey,
+    ),
+  ),
+  errorBorder: OutlineInputBorder(
+    borderRadius: BorderRadius.circular(25.0),
+    borderSide: BorderSide(
+      color: Colors.redAccent,
+    ),
+  ),
+  focusedErrorBorder: OutlineInputBorder(
+    borderRadius: BorderRadius.circular(25.0),
+    borderSide: BorderSide(
+      color: Colors.redAccent,
+    ),
+  ),
+);
