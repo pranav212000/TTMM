@@ -283,6 +283,8 @@ class _ProfileState extends State<Profile>
       var eventId = event['eventId'];
       for (Map<String, dynamic> eventToGive in eventToGives) {
         ToGiveOrGet toGive = ToGiveOrGet.fromJson(eventToGive);
+        Response response =
+            await UserApiService.create().getUser(toGive.phoneNumber);
         UserData user = UserData.fromJson(response.body);
         toGive.name = user.name;
         toGive.eventName = eventName;
@@ -357,7 +359,8 @@ class _ProfileState extends State<Profile>
       _phoneNumber = preferences.getString(currentPhoneNUmber);
     }
 
-    Response response = await UserApiService.create().getUserGivens(_phoneNumber);
+    Response response =
+        await UserApiService.create().getUserGivens(_phoneNumber);
 
     List<GivenOrGot> givens = new List<GivenOrGot>();
     for (Map<String, dynamic> event in response.body) {
