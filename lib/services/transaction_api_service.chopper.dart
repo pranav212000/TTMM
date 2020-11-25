@@ -17,6 +17,14 @@ class _$TransactionApiService extends TransactionApiService {
   final definitionType = TransactionApiService;
 
   @override
+  Future<Response<dynamic>> getTranasaction(String eventId) {
+    final $url = '/transaction/';
+    final $params = <String, dynamic>{'eventId': eventId};
+    final $request = Request('GET', $url, client.baseUrl, parameters: $params);
+    return client.send<dynamic, dynamic>($request);
+  }
+
+  @override
   Future<Response<dynamic>> postPayBill(
       String eventId, Map<String, dynamic> body) {
     final $url = '/transaction/payBill';

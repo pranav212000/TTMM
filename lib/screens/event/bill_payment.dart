@@ -1,8 +1,10 @@
 import 'dart:convert';
 
 import 'package:chopper/chopper.dart';
+import 'package:floor/floor.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ttmm/models/transaction.dart';
 import 'package:ttmm/services/transaction_api_service.dart';
@@ -31,6 +33,9 @@ class _BillPaymentState extends State<BillPayment> {
   String _upiId;
   String _name;
   String _phone;
+  Future _futureTransaction;
+
+  TextEditingController controller = new TextEditingController(text: '');
 
   Future getPhoneNumber() async {
     SharedPreferences preferences = await SharedPreferences.getInstance();
@@ -41,6 +46,7 @@ class _BillPaymentState extends State<BillPayment> {
 
   @override
   void initState() {
+    _futureTransaction = getTransaction();
     _upiIndia.getAllUpiApps().then((value) {
       setState(() {
         apps = value;
@@ -50,216 +56,322 @@ class _BillPaymentState extends State<BillPayment> {
     super.initState();
   }
 
-// TODO add the total bill amount paid amount and remaining amount just to fill the page looks pretty empty right now 
+  Future getTransaction() async {
+    Response response =
+        await TransactionApiService.create().getTranasaction(widget.eventId);
+
+    print('body : ');
+    print(response.body);
+
+// FIXME transaction from json isn't working
+    print('transaction : ');
+    Transaction transaction = Transaction.fromJson(response.body);
+
+    print(transaction);
+    if (response.statusCode == 200) return response.body;
+  }
+
+// TODO add the total bill amount paid amount and remaining amount just to fill the page looks pretty empty right now
 // FIXME also add the bottom sheet which is probably not there right now
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      key: _scaffoldKey,
-      appBar: AppBar(
-        title: Text('Bill Payment'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              TextFormField(
-                initialValue: _amount == 0 ? null : _amount.toString(),
-                decoration: InputDecoration(
-                    labelText: 'Amount',
-                    hintText: 'Amount',
-                    hintStyle: HINT_STYLE),
-                validator: (val) => val.isEmpty
-                    ? 'Enter cost'
-                    : !isNumeric(val)
-                        ? 'Enter a number'
-                        : null,
-                onChanged: (val) {
-                  if (isNumeric(val)) _amount = int.parse(val);
-                },
+    return FutureBuilder(
+      future: getTransaction(),
+      builder: (BuildContext context, AsyncSnapshot snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(
+            child: CircularProgressIndicator(),
+          );
+        } else if (snapshot.connectionState == ConnectionState.done) {
+          print('DATA');
+          print(snapshot.data);
+          if (snapshot.data == null) {
+            return Center(
+              child: Text(
+                  'Could not get transaction details, please try again later'),
+            );
+          } else {
+            Transaction transaction = Transaction.fromJson(snapshot.data);
+            return Scaffold(
+              key: _scaffoldKey,
+              appBar: AppBar(
+                title: Text('Bill Payment'),
               ),
-              Row(
-                children: [
-                  Card(
-                    color: Colors.green,
-                    child: Container(
-                      height: 100,
-                      width: 130,
-                      child: FlatButton(
-                        child: Image.asset(
-                          'assets/images/cash.png',
-                          scale: 5,
-                        ),
-                        onPressed: () async {
-                          print(_amount);
-                          if (_formKey.currentState.validate()) {
-                            if (_phone == null) await getPhoneNumber();
-                            setState(() {
-                              _isLoading = true;
-                              postPayment(widget.eventId, _amount, cash);
-                            });
-                          }
-                        },
-                      ),
-                    ),
-                  ),
-                  Card(
-                    color: Colors.purple,
-                    child: Container(
-                      height: 100,
-                      width: 130,
-                      child: FlatButton(
-                        child: Image.asset(
-                          'assets/images/upi.png',
-                          scale: 4,
-                        ),
-                        onPressed: () async {
-                          if (_formKey.currentState.validate()) {
-                            if (_phone == null)
-                              await getPhoneNumber();
-                            else {
-                              String scanResult = await scanner.scan();
-                              print(scanResult);
-                              // String temp =
-                              //     "upi://pay?pa=pranavpatil212000@oksbi&pn=Pranav%20Patil&aid=uGICAgIDJjPLAGw";
-                              var decoded = Uri.decodeComponent(scanResult);
-
-                              Uri uri = Uri.dataFromString(scanResult);
-                              Map<String, dynamic> params = uri.queryParameters;
-                              var uid = params['pa'];
-                              var name = Uri.decodeComponent(params['pn']);
-                              print(uid);
-                              print(name);
-                              print(decoded);
-                              setState(() {
-                                _upiId = uid;
-                                _name = name;
-                                _isUpi = true;
-                              });
-                            }
-                          }
-                        },
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              Visibility(
-                  visible: _isLoading,
-                  child: Center(
-                    child: CircularProgressIndicator(),
-                  )),
-              Visibility(
-                visible: _isUpi,
-                child: apps != null
-                    ? Flexible(
-                        fit: FlexFit.loose,
-                        child: Card(
-                          child: GridView.count(
-                            shrinkWrap: true,
-                            // Create a grid with 2 columns. If you change the scrollDirection to
-                            // horizontal, this produces 2 rows.
-                            crossAxisCount: 3,
-                            // Generate 100 widgets that display their index in the List.
-                            children: List.generate(apps.length, (index) {
-                              return ListTile(
-                                title: Image.memory(apps[index].icon),
-                                onTap: () async {
-                                  // TODO take cash input from the user
-                                  UpiResponse _upiResponse =
-                                      await initiateTransaction(
-                                          apps[index].app,
-                                          _upiId,
-                                          _name,
-                                          _amount.toDouble(),
-                                          "Paying Bill");
-
-                                  if (_upiResponse.error != null) {
-                                    switch (_upiResponse.error) {
-                                      case UpiError.APP_NOT_INSTALLED:
-                                        print(
-                                            "Requested app not installed on device");
-                                        showSnackbar(_scaffoldKey,
-                                            "Requested app not installed on device");
-                                        break;
-                                      case UpiError.INVALID_PARAMETERS:
-                                        print(
-                                            "Requested app cannot handle the transaction");
-                                        showSnackbar(_scaffoldKey,
-                                            "Requested app cannot handle the transaction");
-
-                                        break;
-                                      case UpiError.NULL_RESPONSE:
-                                        print(
-                                            "requested app didn't returned any response");
-                                        showSnackbar(_scaffoldKey,
-                                            "requested app didn't returned any response");
-
-                                        break;
-                                      case UpiError.USER_CANCELLED:
-                                        print("You cancelled the transaction");
-                                        showSnackbar(_scaffoldKey,
-                                            "You cancelled the transaction");
-
-                                        break;
-                                    }
-                                  } else {
-                                    String status = _upiResponse.status;
-                                    print(_upiResponse.toString());
-                                    switch (status) {
-                                      case UpiPaymentStatus.SUCCESS:
-                                        print('Success');
-                                        showSnackbar(
-                                            _scaffoldKey, "Payment successful",
-                                            color: Colors.green);
-
-                                        postPayment(
-                                            widget.eventId, _amount, upi);
-
-                                        break;
-                                      case UpiPaymentStatus.SUBMITTED:
-                                        print('Submited');
-                                        showSnackbar(
-                                            _scaffoldKey, "Payment submitted",
-                                            color: Colors.amber);
-                                        break;
-                                      case UpiPaymentStatus.FAILURE:
-                                        print('FAILURE');
-                                        showSnackbar(
-                                            _scaffoldKey, "Payment failure",
-                                            color: Colors.red);
-                                        break;
-                                      // default:
-                                    }
-                                  }
-                                },
-                              );
-                            }),
+              resizeToAvoidBottomInset: false,
+              body: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Form(
+                  key: _formKey,
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(20.0),
+                          child: TextFormField(
+                            initialValue:
+                                _amount == 0 ? null : _amount.toString(),
+                            decoration: inputDecoration.copyWith(
+                                labelText: 'Amount', hintText: 'Amount'),
+                            keyboardType: TextInputType.number,
+                            validator: (val) => val.isEmpty
+                                ? 'Enter amount'
+                                : !isNumeric(val)
+                                    ? 'Enter a number'
+                                    : null,
+                            onChanged: (val) {
+                              if (isNumeric(val)) _amount = int.parse(val);
+                            },
                           ),
                         ),
-                      )
-                    : Text('No UPI apps'),
-              )
-            ],
-          ),
-        ),
-        // child: ListView.builder(
-        //   itemCount: apps.length,
-        //   itemBuilder: (BuildContext context, int index) {
-        //     return ListTile(
-        //       title: Text(apps[index].app),
-        //       leading: Image.memory(apps[index].icon),
-        //       // Text(apps[index].app), Image.memory(apps[index].icon));
-        //     );
-        //   },
-        // ),
-        // ),
-      ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            Container(
+                              width: MediaQuery.of(context).size.width / 3,
+                              child: TextFormField(
+                                initialValue: transaction.totalCost.toString(),
+                                decoration: inputDecoration.copyWith(
+                                    labelText: 'Total Bill',
+                                    hintText: 'Total Bill'),
+                                enabled: false,
+                              ),
+                            ),
+                            Container(
+                              width: MediaQuery.of(context).size.width / 3,
+                              child: TextFormField(
+                                initialValue: transaction.totalPaid.toString(),
+                                decoration: inputDecoration.copyWith(
+                                    labelText: 'Total Paid',
+                                    hintText: 'Total Paid'),
+                                enabled: false,
+                              ),
+                            )
+                          ],
+                        ),
+                        SizedBox(height: 30),
+                        Text(
+                          'Due : ' +
+                              RS +
+                              '${transaction.totalCost - transaction.totalPaid}',
+                          style: GoogleFonts.josefinSans(fontSize: 38),
+                        ),
+                        SizedBox(
+                          height: 30,
+                        ),
+                        Text(
+                          'Choose Payment Method',
+                        ),
+                        SizedBox(
+                          height: 20,
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            Card(
+                              color: Colors.green,
+                              child: Container(
+                                height: _isUpi ? 50 : 100,
+                                width: _isUpi ? 60 : 130,
+                                child: FlatButton(
+                                  child: Image.asset(
+                                    'assets/images/cash.png',
+                                    scale: 5,
+                                  ),
+                                  onPressed: () async {
+                                    print(_amount);
+                                    if (_isUpi)
+                                      setState(() {
+                                        _isUpi = false;
+                                      });
+                                    else if (_formKey.currentState.validate()) {
+                                      if (_phone == null)
+                                        await getPhoneNumber();
+                                    }
+                                  },
+                                ),
+                              ),
+                            ),
+                            Card(
+                              color: Colors.purple,
+                              child: Container(
+                                height: _isUpi ? 100 : 50,
+                                width: _isUpi ? 130 : 60,
+                                child: FlatButton(
+                                  child: Image.asset(
+                                    'assets/images/upi.png',
+                                    scale: 4,
+                                  ),
+                                  onPressed: () async {
+                                    if (_formKey.currentState.validate()) {
+                                      if (_phone == null) {
+                                        showSnackbar(_scaffoldKey,
+                                            'Please wait fetching information!');
+                                        await getPhoneNumber();
+                                      } else {
+                                        setState(() {
+                                          _isUpi = true;
+                                        });
+                                      }
+                                    }
+                                  },
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 20),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Visibility(
+                              visible: _isUpi,
+                              child: TextFormField(
+                                controller: controller,
+                                decoration: inputDecoration.copyWith(
+                                    labelText: 'UPI ID', hintText: 'UPI ID'),
+                                onChanged: (val) => _upiId = val,
+                                validator: (val) =>
+                                    val.isEmpty ? 'Enter UPI ID' : null,
+                              )),
+                        ),
+                        SizedBox(
+                          height: 20,
+                        ),
+                        Visibility(
+                            visible: _isUpi,
+                            child: RaisedButton(
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.qr_code,
+                                    color: Colors.black,
+                                  ),
+                                  SizedBox(width: 10),
+                                  Text(
+                                    'Scan QR code',
+                                    style: TextStyle(color: Colors.black),
+                                  )
+                                ],
+                              ),
+                              onPressed: () async {
+                                String scanResult = await scanner.scan();
+                                print(scanResult);
+                                // String temp =
+                                //     "upi://pay?pa=pranavpatil212000@oksbi&pn=Pranav%20Patil&aid=uGICAgIDJjPLAGw";
+                                var decoded = Uri.decodeComponent(scanResult);
+
+                                Uri uri = Uri.dataFromString(scanResult);
+                                Map<String, dynamic> params =
+                                    uri.queryParameters;
+                                var uid = params['pa'];
+                                var name = Uri.decodeComponent(params['pn']);
+                                print(uid);
+                                print(name);
+                                print(decoded);
+                                setState(() {
+                                  _upiId = uid;
+                                  controller.text = uid;
+                                  _name = name;
+                                  _isUpi = true;
+                                });
+                              },
+                            )),
+                        SizedBox(
+                          height: 20,
+                        ),
+                        RaisedButton(
+                          child: Text('PAY'),
+                          onPressed: () {
+                            if (_formKey.currentState.validate()) {
+                              if (_isUpi) {
+                                showAppsBottomSheet();
+                              } else {
+                                setState(() {
+                                  _isLoading = true;
+                                  postPayment(widget.eventId, _amount, cash);
+                                });
+                              }
+                            }
+                          },
+                        ),
+                        Visibility(
+                            visible: _isLoading,
+                            child: Center(
+                              child: CircularProgressIndicator(),
+                            )),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }
+        }
+      },
     );
+  }
+
+  void showAppsBottomSheet() {
+    showModalBottomSheet(
+        context: context,
+        builder: (BuildContext bc) {
+          return ListView.builder(
+            itemCount: apps.length,
+            shrinkWrap: true,
+            itemBuilder: (BuildContext context, int index) {
+              return ListTile(
+                leading: Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: Image.memory(
+                    apps[index].icon,
+                  ),
+                ),
+                title: Text(getUpiAppName(apps[index].app)),
+                onTap: () async {
+                  UpiResponse _upiResponse = await initiateTransaction(
+                      apps[index].app,
+                      _upiId,
+                      _name,
+                      _amount.toDouble(),
+                      'asdfasdfasdf');
+
+                  if (_upiResponse.error != null) {
+                    displayUpiError(_scaffoldKey, _upiResponse.error);
+                  } else {
+                    String status = _upiResponse.status;
+                    switch (status) {
+                      case UpiPaymentStatus.SUCCESS:
+                        print('Success');
+                        showSnackbar(_scaffoldKey, "Payment successful",
+                            color: Colors.green);
+
+                        postPayment(widget.eventId, _amount, upi);
+
+                        break;
+                      case UpiPaymentStatus.SUBMITTED:
+                        print('Submited');
+                        showSnackbar(_scaffoldKey, "Payment submitted",
+                            color: Colors.amber);
+                        break;
+                      case UpiPaymentStatus.FAILURE:
+                        print('FAILURE');
+                        showSnackbar(_scaffoldKey, "Payment failure",
+                            color: Colors.red);
+                        break;
+
+                      default:
+                        print('PENDING');
+                        showSnackbar(_scaffoldKey, "Payment not complete yet!",
+                            color: Colors.blue);
+                    }
+                  }
+                },
+              );
+            },
+          );
+        });
   }
 
   void postPayment(String eventId, int amt, String mode) async {
@@ -297,4 +409,5 @@ class _BillPaymentState extends State<BillPayment> {
   //     amount: _amount.toDouble(),
   //   );
   // }
+
 }

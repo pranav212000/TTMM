@@ -5,17 +5,19 @@ part 'transaction_api_service.chopper.dart';
 
 @ChopperApi(baseUrl: '/transaction')
 abstract class TransactionApiService extends ChopperService {
+  @Get(path: '/')
+  Future<Response> getTranasaction(@Query('eventId') String eventId);
 
   @Post(path: '/payBill')
-  Future<Response> postPayBill (@Query('eventId') String eventId, @Body() Map<String, dynamic> body);
+  Future<Response> postPayBill(
+      @Query('eventId') String eventId, @Body() Map<String, dynamic> body);
 
   @Post(path: '/payPerson')
-  Future<Response> postPayPerson(@Query('eventId') String eventId, @Body() Map<String, dynamic> body);
-  
+  Future<Response> postPayPerson(
+      @Query('eventId') String eventId, @Body() Map<String, dynamic> body);
+
   @Get(path: 'allToGets')
   Future<Response> allToGets(@Query('eventId') String eventId);
-
-  
 
   static TransactionApiService create() {
     final client = ChopperClient(
