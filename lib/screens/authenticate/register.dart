@@ -150,7 +150,7 @@ class _RegisterState extends State<Register> {
                           Icons.payment,
                         ),
                         enabled: true,
-                        hintText: 'UPI ID',
+                        hintText: 'UPI ID (optional)',
                         hintStyle: TextStyle(color: Colors.grey[700]),
                         enabledBorder: UnderlineInputBorder(
                           borderSide: BorderSide(color: Colors.white),
@@ -166,84 +166,93 @@ class _RegisterState extends State<Register> {
                 Container(
                   margin: EdgeInsets.only(top: 50),
                   child: RaisedButton(
-                    onPressed: () async {
-                      if (_formKey.currentState.validate() && _image != null) {
-                        StorageUploadTask storageUploadTask = reference
-                            .child("${widget.user.uid}.jpg")
-                            .putFile(_image);
+                    onPressed: _loading
+                        ? null
+                        : () async {
+                            if (_formKey.currentState.validate() &&
+                                _image != null) {
+                              StorageUploadTask storageUploadTask = reference
+                                  .child("${widget.user.uid}.jpg")
+                                  .putFile(_image);
 
-                        if (storageUploadTask.isSuccessful ||
-                            storageUploadTask.isComplete) {
-                          final String url = await reference.getDownloadURL();
+                              if (storageUploadTask.isSuccessful ||
+                                  storageUploadTask.isComplete) {
+                                final String url =
+                                    await reference.getDownloadURL();
 
-                          print('User added');
-                          Navigator.pop(context);
+                                print('User added');
+                                Navigator.pop(context);
 
-                          print("The download URL is " + url);
-                        } else if (storageUploadTask.isInProgress) {
-                          storageUploadTask.events.listen((event) {
-                            double percentage = 100 *
-                                (event.snapshot.bytesTransferred.toDouble() /
-                                    event.snapshot.totalByteCount.toDouble());
+                                print("The download URL is " + url);
+                              } else if (storageUploadTask.isInProgress) {
+                                storageUploadTask.events.listen((event) {
+                                  double percentage = 100 *
+                                      (event.snapshot.bytesTransferred
+                                              .toDouble() /
+                                          event.snapshot.totalByteCount
+                                              .toDouble());
 
-                            setState(() {
-                              _loading = true;
-                            });
-                            print("THe percentage " + percentage.toString());
-                          });
+                                  setState(() {
+                                    _loading = true;
+                                  });
+                                  print("THe percentage " +
+                                      percentage.toString());
+                                });
 
-                          StorageTaskSnapshot storageTaskSnapshot =
-                              await storageUploadTask.onComplete;
-                          final String url =
-                              await storageTaskSnapshot.ref.getDownloadURL();
+                                StorageTaskSnapshot storageTaskSnapshot =
+                                    await storageUploadTask.onComplete;
+                                final String url = await storageTaskSnapshot.ref
+                                    .getDownloadURL();
 
-                          //Here you can get the download URL when the task has been completed.
-                          print("Download URL " + url.toString());
+                                //Here you can get the download URL when the task has been completed.
+                                print("Download URL " + url.toString());
 
-                          UserData userData = new UserData(
-                              uid: widget.user.uid,
-                              phoneNumber: widget.user.phoneNumber,
-                              name: _name,
-                              groups: [],
-                              upiId: _upi,
-                              profileUrl: url);
+                                UserData userData = new UserData(
+                                    uid: widget.user.uid,
+                                    phoneNumber: widget.user.phoneNumber,
+                                    name: _name,
+                                    groups: [],
+                                    upiId: _upi,
+                                    profileUrl: url);
 
-                          print('SENDING THIS : ');
-                          print(json.encode(userData));
+                                print('SENDING THIS : ');
+                                print(json.encode(userData));
 
-                          await UserApiService.create()
-                              .addUser(userData.toJson())
-                              .then((response) => print(response))
-                              .catchError((err) => print(err))
-                              .whenComplete(() => Navigator.of(context).pop());
+                                await UserApiService.create()
+                                    .addUser(userData.toJson())
+                                    .then((response) => print(response))
+                                    .catchError((err) => print(err))
+                                    .whenComplete(
+                                        () => Navigator.of(context).pop());
 
-                          // DatabaseService(phoneNumber: widget.user.phoneNumber)
-                          //     .updateUserData(
-                          //         widget.user.uid,
-                          //         widget.user.phoneNumber,
-                          //         _name,
-                          //         url,
-                          //         List<String>());
+                                // DatabaseService(phoneNumber: widget.user.phoneNumber)
+                                //     .updateUserData(
+                                //         widget.user.uid,
+                                //         widget.user.phoneNumber,
+                                //         _name,
+                                //         url,
+                                //         List<String>());
 
-                          SharedPreferences preferences =
-                              await SharedPreferences.getInstance();
-                          preferences.setString(currentUser, widget.user.uid);
-                          preferences.setString(
-                              currentPhoneNUmber, widget.user.phoneNumber);
+                                SharedPreferences preferences =
+                                    await SharedPreferences.getInstance();
+                                preferences.setString(
+                                    currentUser, widget.user.uid);
+                                preferences.setString(currentPhoneNUmber,
+                                    widget.user.phoneNumber);
 
-                          Navigator.of(context).pushReplacement(
-                              MaterialPageRoute(
-                                  builder: (context) => NavigatorPage()));
-                        } else {
-                          //Catch any cases here that might come up like canceled, interrupted
-                          print('Task not completed');
-                        }
-                      } else if (_image == null) {
-                        _scaffoldKey.currentState.showSnackBar(SnackBar(
-                          content: Text('Please select a profile pic'),
-                        ));
-                      }
-                    },
+                                Navigator.of(context).pushReplacement(
+                                    MaterialPageRoute(
+                                        builder: (context) => NavigatorPage()));
+                              } else {
+                                //Catch any cases here that might come up like canceled, interrupted
+                                print('Task not completed');
+                              }
+                            } else if (_image == null) {
+                              _scaffoldKey.currentState.showSnackBar(SnackBar(
+                                content: Text('Please select a profile pic'),
+                              ));
+                            }
+                          },
                     child: Text('Submit'),
                     // color: Colors.tealAccent,
                   ),

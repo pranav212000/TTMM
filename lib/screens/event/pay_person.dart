@@ -146,7 +146,7 @@ class _PayPersonState extends State<PayPerson>
                   );
                 } else if (snapshot.data.length == 0) {
                   return Center(
-                    child: Text('No-one to yet'),
+                    child: Text('No-one'),
                   );
                 } else {
                   return ListView.builder(
@@ -268,10 +268,11 @@ class _PayPersonState extends State<PayPerson>
                       children: [
                         FlatButton(
                           color: Colors.green,
-                          child: Image.asset(
-                            'assets/images/cash.png',
-                            scale: 5,
-                          ),
+                          child: Icon(Icons.payments_outlined),
+                          // child: Image.asset(
+                          //   'assets/images/cash.png',
+                          //   scale: 5,
+                          // ),
                           onPressed: () async {
                             if (_formKey.currentState.validate()) {
                               Map<String, dynamic> body = {

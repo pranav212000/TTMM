@@ -148,9 +148,9 @@ class _WrapperState extends State<Wrapper> {
     else {
       initFirebase();
       setSharedPreferences(user);
-      // return NavigatorPage();
+      return NavigatorPage();
 
-      return BillPayment(eventId: "test1");
+      // return BillPayment(eventId: "test1");
     }
 // // TODO fix this jugad!
 //     else {

@@ -20,7 +20,7 @@ class ContactsPage extends StatefulWidget {
 }
 
 class _ContactsPageState extends State<ContactsPage>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   List<Person> _registeredContacts = new List<Person>();
   List<Person> _inviteContacts = new List<Person>();
   String _phoneNumber;
@@ -33,6 +33,9 @@ class _ContactsPageState extends State<ContactsPage>
   TabController _tabController;
   final ScrollController _inviteController = ScrollController();
   final ScrollController _registeredController = ScrollController();
+  AnimationController controller;
+  Animation colorAnimation;
+  Animation rotateAnimation;
 
 // TODO add sync button and instead of sync always do once a day or on clicking sync button
   @override
@@ -41,6 +44,10 @@ class _ContactsPageState extends State<ContactsPage>
     getContacts();
     getUserCredentials();
     getOneSyncComplete();
+    controller =
+        AnimationController(vsync: this, duration: Duration(seconds: 200));
+    rotateAnimation = Tween<double>(begin: 360, end: 0.0).animate(controller);
+
     super.initState();
     _tabController = TabController(length: 2, vsync: this, initialIndex: 0);
     _tabController.addListener(_handleTabIndex);
@@ -74,6 +81,7 @@ class _ContactsPageState extends State<ContactsPage>
   }
 
   Future<void> syncContacts(Iterable<Contact> contacts) async {
+    _isSyncComplete = false;
     final database =
         await $FloorAppDatabase.databaseBuilder('app_database.db').build();
     final personDao = database.personDao;
@@ -126,6 +134,8 @@ class _ContactsPageState extends State<ContactsPage>
       _isOneSyncDone = true;
       _isSyncComplete = true;
       _isLoadingComplete = false;
+      // controller.stop();
+      // controller.reset();
       getContactsFromFloor();
 
       print(' Invite contacts length : ${_inviteContacts.length}');
@@ -133,10 +143,13 @@ class _ContactsPageState extends State<ContactsPage>
   }
 
   Future<void> getContacts() async {
+    // controller.forward();
     try {
       final Iterable<Contact> contacts = await ContactsService.getContacts();
-      await syncContacts(contacts);
+      return await syncContacts(contacts);
     } catch (e) {
+      // controller.stop();
+      // controller.reset();
       print(e.toString());
     }
   }
@@ -168,6 +181,23 @@ class _ContactsPageState extends State<ContactsPage>
       key: _scaffoldKey,
       appBar: AppBar(
         title: Text('Select Contact'),
+        actions: <Widget>[
+          AnimatedSync(
+            animation: rotateAnimation,
+            callback: () async {
+              controller.forward();
+
+              if (_isSyncComplete) {
+                showSnackbar(_scaffoldKey, 'Syncing Contacts.');
+                await getContacts();
+              } else {
+               showSnackbar(_scaffoldKey, 'Please wait sync already in progress!!');
+              }
+              controller.stop();
+              controller.reset();
+            },
+          ),
+        ],
         bottom: TabBar(
           controller: _tabController,
           tabs: [
@@ -326,5 +356,21 @@ class _ContactsPageState extends State<ContactsPage>
               size: 20.0,
             ),
           );
+  }
+}
+
+class AnimatedSync extends AnimatedWidget {
+  VoidCallback callback;
+  AnimatedSync({Key key, Animation<double> animation, this.callback})
+      : super(key: key, listenable: animation);
+
+  Widget build(BuildContext context) {
+    final Animation<double> animation = listenable;
+    return Transform.rotate(
+      angle: animation.value,
+      child: IconButton(
+          icon: Icon(Icons.sync), // <-- Icon
+          onPressed: () => callback()),
+    );
   }
 }

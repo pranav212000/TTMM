@@ -1,5 +1,7 @@
 import 'package:chopper/chopper.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:ttmm/models/group.dart';
 import 'package:ttmm/screens/home/group_list_item.dart';
 import 'package:ttmm/services/database.dart';
@@ -8,7 +10,14 @@ import 'package:ttmm/services/group_api_service.dart';
 class GroupList extends StatefulWidget {
   final List<dynamic> groupIds;
 
-  GroupList({@required this.groupIds});
+  final Function onRefresh;
+  final Function onLoading;
+  final RefreshController refreshController;
+  GroupList(
+      {@required this.groupIds,
+      @required this.onRefresh,
+      @required this.onLoading,
+      @required this.refreshController});
 
   @override
   _GroupListState createState() => _GroupListState();
@@ -45,12 +54,39 @@ class _GroupListState extends State<GroupList> {
           );
         } else {
           if (snapshot.data != null)
-            return ListView.builder(
-              itemBuilder: (_, index) {
-                return GroupListItem(group: snapshot.data.elementAt(index));
-              },
-              itemCount: snapshot.data.length,
-            );
+            return SmartRefresher(
+                enablePullDown: true,
+                enablePullUp: true,
+                header: WaterDropHeader(),
+                footer: CustomFooter(
+                  builder: (BuildContext context, LoadStatus mode) {
+                    Widget body;
+                    if (mode == LoadStatus.idle) {
+                      body = Text("pull up load");
+                    } else if (mode == LoadStatus.loading) {
+                      body = CupertinoActivityIndicator();
+                    } else if (mode == LoadStatus.failed) {
+                      body = Text("Load Failed!Click retry!");
+                    } else if (mode == LoadStatus.canLoading) {
+                      body = Text("release to load more");
+                    } else {
+                      body = Text("No more Data");
+                    }
+                    return Container(
+                      height: 55.0,
+                      child: Center(child: body),
+                    );
+                  },
+                ),
+                controller: widget.refreshController,
+                onRefresh: widget.onRefresh,
+                onLoading: widget.onLoading,
+                child: ListView.builder(
+                  itemBuilder: (_, index) {
+                    return GroupListItem(group: snapshot.data.elementAt(index));
+                  },
+                  itemCount: snapshot.data.length,
+                ));
           else
             return CircularProgressIndicator();
         }

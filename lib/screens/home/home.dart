@@ -5,6 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ttmm/floor/database/database.dart';
 import 'package:ttmm/models/group.dart';
@@ -33,8 +34,10 @@ class _HomeState extends State<Home> with AutomaticKeepAliveClientMixin<Home> {
   List<Group> _userGroups;
   bool _loadingGroups = true;
 
-  Future<UserData> _future;
+  Future _future;
 
+  RefreshController _refreshController =
+      RefreshController(initialRefresh: false);
   @override
   bool get wantKeepAlive => true;
   // Future getUserData(firebaseAuth.User user) async {
@@ -114,6 +117,26 @@ class _HomeState extends State<Home> with AutomaticKeepAliveClientMixin<Home> {
     }
   }
 
+  void _onRefresh() async {
+    // monitor network fetch
+
+    _future = _getUserData().whenComplete(() => setState(() {
+          _refreshController.refreshCompleted();
+        }));
+
+    // if failed,use refreshFailed()
+  }
+
+  void _onLoading() async {
+    // monitor network fetch
+    _future = _getUserData().whenComplete(() {
+      if (mounted) setState(() {});
+      _refreshController.loadComplete();
+    });
+    // if failed,use loadFailed(),if no data return,use LoadNodata()
+    // _orders.add((_orders.length + 1).toString());
+  }
+
   @override
   Widget build(BuildContext context) {
     final firebaseuser = Provider.of<firebaseAuth.User>(context);
@@ -127,76 +150,83 @@ class _HomeState extends State<Home> with AutomaticKeepAliveClientMixin<Home> {
         } else {
           if (snapshot.data != null)
             return Scaffold(
-              key: _scaffoldKey,
-              appBar: AppBar(
-                title: Text('Home'),
-                // actions: <Widget>[
-                //   FlatButton.icon(
-                //       onPressed: () {
-                //         showSnackbar(_scaffoldKey, 'Signing out');
-                //         AuthService().signout();
-                //       },
-                //       icon: Icon(
-                //         Icons.exit_to_app,
-                //         color: Colors.white,
-                //       ),
-                //       label: Text(
-                //         'Signout',
-                //         style: TextStyle(color: Colors.white),
-                //       ))
-                // ],
-              ),
-              drawer: MyDrawer(userData: snapshot.data),
-              floatingActionButton: FloatingActionButton.extended(
-                onPressed: () async {
-                  final PermissionStatus permissionStatus =
-                      await _getPermission();
-                  if (permissionStatus == PermissionStatus.granted) {
-                    String result = await Navigator.of(context).push(
-                        MaterialPageRoute(
-                            builder: (context) => ContactsPage()));
+                key: _scaffoldKey,
+                appBar: AppBar(
+                  title: Text('Home'),
+                  // actions: <Widget>[
+                  //   FlatButton.icon(
+                  //       onPressed: () {
+                  //         showSnackbar(_scaffoldKey, 'Signing out');
+                  //         AuthService().signout();
+                  //       },
+                  //       icon: Icon(
+                  //         Icons.exit_to_app,
+                  //         color: Colors.white,
+                  //       ),
+                  //       label: Text(
+                  //         'Signout',
+                  //         style: TextStyle(color: Colors.white),
+                  //       ))
+                  // ],
+                ),
+                drawer: MyDrawer(userData: snapshot.data),
+                floatingActionButton: FloatingActionButton.extended(
+                  onPressed: () async {
+                    final PermissionStatus permissionStatus =
+                        await _getPermission();
+                    if (permissionStatus == PermissionStatus.granted) {
+                      String result = await Navigator.of(context).push(
+                          MaterialPageRoute(
+                              builder: (context) => ContactsPage()));
 
-                    if (result == 'OK') {
-                      print('RESULT OK');
-                      _userGroups = null;
-                      Navigator.of(context).pushReplacement(
-                          MaterialPageRoute(builder: (context) => Wrapper()));
+                      if (result == 'OK') {
+                        print('RESULT OK');
+                        _userGroups = null;
+                        Navigator.of(context).pushReplacement(
+                            MaterialPageRoute(builder: (context) => Wrapper()));
+                      } else {
+                        print("Group not created");
+                      }
                     } else {
-                      print("Group not created");
+                      showDialog(
+                          barrierDismissible: false,
+                          context: context,
+                          builder: (BuildContext context) =>
+                              CupertinoAlertDialog(
+                                title: Text('Permissions error'),
+                                content: Text('Please enable contacts access '
+                                    'permission in system settings'),
+                                actions: <Widget>[
+                                  CupertinoDialogAction(
+                                    child: Text('OK'),
+                                    onPressed: () =>
+                                        Navigator.of(context).pop(),
+                                  ),
+                                ],
+                              ));
                     }
-                  } else {
-                    showDialog(
-                        barrierDismissible: false,
-                        context: context,
-                        builder: (BuildContext context) => CupertinoAlertDialog(
-                              title: Text('Permissions error'),
-                              content: Text('Please enable contacts access '
-                                  'permission in system settings'),
-                              actions: <Widget>[
-                                CupertinoDialogAction(
-                                  child: Text('OK'),
-                                  onPressed: () => Navigator.of(context).pop(),
-                                ),
-                              ],
-                            ));
-                  }
-                },
-                label: Text('Add Group'),
-                icon: Icon(Icons.add),
-              ),
-              // body: (_loadingGroups ||
-              //         (_userGroups != null ? _userGroups.length : 0) !=
-              //             userData.groups.length)
-              //     ? Loading()
-              // : ((_userGroups.length == 0 && !_loadingGroups)
-              body: snapshot.data.groups.length == 0
-                  ? Center(child: Text('No groups yet'))
-                  : GroupList(
-                      groupIds: snapshot.data.groups,
-                    ),
+                  },
+                  label: Text('Add Group'),
+                  icon: Icon(Icons.add),
+                ),
+                // body: (_loadingGroups ||
+                //         (_userGroups != null ? _userGroups.length : 0) !=
+                //             userData.groups.length)
+                //     ? Loading()
+                // : ((_userGroups.length == 0 && !_loadingGroups)
+                body: snapshot.data.groups.length == 0
+                    ? Center(child: Text('No groups yet'))
+                    : GroupList(
+                        groupIds: snapshot.data.groups,
+                        refreshController: _refreshController,
+                        onRefresh: _onRefresh,
+                        onLoading: _onLoading)
+                // : GroupList(
+                //     groupIds: snapshot.data.groups,
+                //   ),
 
-              // bottomNavigationBar: CurvedNavigationBar(items: null),
-            );
+                // bottomNavigationBar: CurvedNavigationBar(items: null),
+                );
           else
             return registerUser(firebaseuser);
         }
