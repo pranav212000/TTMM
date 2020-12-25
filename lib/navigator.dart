@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ttmm/screens/profile/profile.dart';
 import 'package:ttmm/shared/bottom_navigation_bar.dart';
 import 'package:ttmm/screens/home/home.dart';
 import 'package:ttmm/screens/my_orders/my_orders.dart';
-
-import 'package:ttmm/shared/constants.dart';
 import 'package:ttmm/shared/hex_color.dart';
 import 'package:ttmm/shared/navigation_item.dart';
 
@@ -17,7 +14,7 @@ class NavigatorPage extends StatefulWidget {
 
 class _NavigatorPageState extends State<NavigatorPage> {
   int _currentIndex = 0;
-  final List<Widget> _children = [Home(), MyOrders(), Profile()];
+  List<Widget> _children = [Home(), MyOrders(), Profile()];
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -74,6 +71,16 @@ class _NavigatorPageState extends State<NavigatorPage> {
 
   void onTabTapped(int index) {
     setState(() {
+      switch (index) {
+        case 1:
+          _children[index] = new MyOrders();
+          break;
+        case 2:
+          _children[index] = new Profile();
+          break;
+
+        default:
+      }
       _currentIndex = index;
     });
   }

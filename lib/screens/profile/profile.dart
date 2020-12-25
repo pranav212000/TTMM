@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chopper/chopper.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -148,18 +149,35 @@ class _ProfileState extends State<Profile>
                     children: [
                       Center(
                         child: Container(
-                          child: snapshot.data == null
-                              ? CircleAvatar(
-                                  radius: 70,
-                                  child: Icon(
-                                    Icons.add_a_photo,
-                                    size: 60,
-                                  ))
-                              : CircleAvatar(
-                                  radius: 100,
-                                  backgroundImage:
-                                      Image.network(snapshot.data.profileUrl)
-                                          .image),
+                          // child: snapshot.data == null
+                          //     ? CircleAvatar(
+                          //         radius: 70,
+                          //         child: Icon(
+                          //           Icons.add_a_photo,
+                          //           size: 60,
+                          //         ))
+                          //     : CircleAvatar(
+                          //         radius: 100,
+                          //         backgroundImage:
+                          //             Image.network(snapshot.data.profileUrl)
+                          //                 .image),
+
+                          child: CachedNetworkImage(
+                            imageUrl: snapshot.data.profileUrl,
+                            imageBuilder: (context, imageProvider) => Container(
+                              width: 80.0,
+                              height: 80.0,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                image: DecorationImage(
+                                    image: imageProvider, fit: BoxFit.cover),
+                              ),
+                            ),
+                            placeholder: (context, url) =>
+                                CircularProgressIndicator(),
+                            errorWidget: (context, url, error) =>
+                                Icon(Icons.error),
+                          ),
                         ),
                       ),
                       Container(

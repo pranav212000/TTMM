@@ -62,6 +62,8 @@ class _$AppDatabase extends AppDatabase {
 
   PersonDao _personDaoInstance;
 
+  GroupDao _groupDaoInstance;
+
   Future<sqflite.Database> open(String path, List<Migration> migrations,
       [Callback callback]) async {
     final databaseOptions = sqflite.OpenDatabaseOptions(
@@ -81,6 +83,8 @@ class _$AppDatabase extends AppDatabase {
       onCreate: (database, version) async {
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `Person` (`phoneNumber` TEXT, `avatar` BLOB, `displayName` TEXT, `initials` TEXT, `isRegistered` INTEGER, PRIMARY KEY (`phoneNumber`))');
+        await database.execute(
+            'CREATE TABLE IF NOT EXISTS `Group` (`groupId` TEXT, `groupName` TEXT, `groupIconUrl` TEXT, `updatedAt` TEXT, `createdAt` TEXT, PRIMARY KEY (`groupId`))');
 
         await callback?.onCreate?.call(database, version);
       },
@@ -91,6 +95,11 @@ class _$AppDatabase extends AppDatabase {
   @override
   PersonDao get personDao {
     return _personDaoInstance ??= _$PersonDao(database, changeListener);
+  }
+
+  @override
+  GroupDao get groupDao {
+    return _groupDaoInstance ??= _$GroupDao(database, changeListener);
   }
 }
 
@@ -218,6 +227,94 @@ class _$PersonDao extends PersonDao {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
         await transactionDatabase.personDao.replacePerson(person);
+      });
+    }
+  }
+}
+
+class _$GroupDao extends GroupDao {
+  _$GroupDao(this.database, this.changeListener)
+      : _queryAdapter = QueryAdapter(database),
+        _groupInsertionAdapter = InsertionAdapter(
+            database,
+            'Group',
+            (Group item) => <String, dynamic>{
+                  'groupId': item.groupId,
+                  'groupName': item.groupName,
+                  'groupIconUrl': item.groupIconUrl,
+                  'updatedAt': item.updatedAt,
+                  'createdAt': item.createdAt
+                }),
+        _groupDeletionAdapter = DeletionAdapter(
+            database,
+            'Group',
+            ['groupId'],
+            (Group item) => <String, dynamic>{
+                  'groupId': item.groupId,
+                  'groupName': item.groupName,
+                  'groupIconUrl': item.groupIconUrl,
+                  'updatedAt': item.updatedAt,
+                  'createdAt': item.createdAt
+                });
+
+  final sqflite.DatabaseExecutor database;
+
+  final StreamController<String> changeListener;
+
+  final QueryAdapter _queryAdapter;
+
+  final InsertionAdapter<Group> _groupInsertionAdapter;
+
+  final DeletionAdapter<Group> _groupDeletionAdapter;
+
+  @override
+  Future<List<Group>> getAllGroups() async {
+    return _queryAdapter.queryList('SELECT * FROM Group',
+        mapper: (Map<String, dynamic> row) => Group(
+            groupId: row['groupId'] as String,
+            groupName: row['groupName'] as String,
+            updatedAt: row['updatedAt'] as String,
+            createdAt: row['createdAt'] as String,
+            groupIconUrl: row['groupIconUrl'] as String));
+  }
+
+  @override
+  Future<List<Group>> getGroup(String groupId) async {
+    return _queryAdapter.queryList('SELECT * FROM Group WHERE groupId = ?',
+        arguments: <dynamic>[groupId],
+        mapper: (Map<String, dynamic> row) => Group(
+            groupId: row['groupId'] as String,
+            groupName: row['groupName'] as String,
+            updatedAt: row['updatedAt'] as String,
+            createdAt: row['createdAt'] as String,
+            groupIconUrl: row['groupIconUrl'] as String));
+  }
+
+  @override
+  Future<void> deleteAllGroups() async {
+    await _queryAdapter.queryNoReturn('DELETE FROM Person');
+  }
+
+  @override
+  Future<void> insertGroup(Group group) async {
+    await _groupInsertionAdapter.insert(group, OnConflictStrategy.abort);
+  }
+
+  @override
+  Future<void> deleteGroup(Group group) async {
+    await _groupDeletionAdapter.delete(group);
+  }
+
+  @override
+  Future<void> replaceGroup(Group group) async {
+    if (database is sqflite.Transaction) {
+      await super.replaceGroup(group);
+    } else {
+      await (database as sqflite.Database)
+          .transaction<void>((transaction) async {
+        final transactionDatabase = _$AppDatabase(changeListener)
+          ..database = transaction;
+        await transactionDatabase.groupDao.replaceGroup(group);
       });
     }
   }
