@@ -11,7 +11,7 @@ import 'package:ttmm/services/firebase_api_service.dart';
 import 'package:ttmm/services/transaction_api_service.dart';
 import 'package:ttmm/shared/constants.dart';
 
-class NotificationManger {
+class NotificationManager {
   static BuildContext _context;
   static final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       new FlutterLocalNotificationsPlugin();

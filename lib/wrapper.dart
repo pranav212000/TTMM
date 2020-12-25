@@ -1,38 +1,16 @@
-import 'dart:io';
-
 import 'package:chopper/chopper.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebaseAuth;
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ttmm/fcm/fcm.dart';
 import 'package:ttmm/fcm/notification_manager.dart';
-
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
-import 'package:ttmm/models/order.dart';
-import 'package:ttmm/screens/contacts/contacts_page.dart';
-import 'package:ttmm/screens/event/add_edit_order.dart';
-import 'package:ttmm/screens/event/bill_payment.dart';
-import 'package:ttmm/screens/home/home.dart';
-
-import 'package:ttmm/services/auth.dart';
-import 'package:ttmm/shared/error.dart';
-import 'package:ttmm/shared/loading.dart';
-import 'package:ttmm/wrapper.dart';
-import 'package:logging/logging.dart';
 import 'package:ttmm/models/group.dart';
 import 'package:ttmm/navigator.dart';
 import 'package:ttmm/screens/authenticate/signin.dart';
-import 'package:ttmm/screens/event/event_home.dart';
-import 'package:ttmm/screens/grouphome/addgroup.dart';
 import 'package:ttmm/services/database.dart';
 import 'package:ttmm/services/firebase_api_service.dart';
 import 'package:ttmm/services/user_api_service.dart';
@@ -86,7 +64,7 @@ class _WrapperState extends State<Wrapper> {
 
       final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
 
-      NotificationManger.init(context: context);
+      NotificationManager.init(context: context);
       Fcm.initConfigure(context);
       // _firebaseMessaging.configure(
       //   onBackgroundMessage: Platform.isIOS

@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:chopper/chopper.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ttmm/models/transaction.dart';
 import 'package:ttmm/models/userdata.dart';
@@ -255,6 +256,7 @@ class _PayPersonState extends State<PayPerson>
                       decoration: InputDecoration(
                           hintText: 'Amount', labelText: 'Amount'),
                       onChanged: (val) => _amount = val,
+                      keyboardType: TextInputType.number,
                       validator: (val) => val.isEmpty
                           ? 'Enter amount'
                           : (!isNumeric(val) ? 'Enter a number' : null),
@@ -266,64 +268,73 @@ class _PayPersonState extends State<PayPerson>
                     ),
                     Row(
                       children: [
-                        FlatButton(
-                          color: Colors.green,
-                          child: Icon(Icons.payments_outlined),
-                          // child: Image.asset(
-                          //   'assets/images/cash.png',
-                          //   scale: 5,
-                          // ),
-                          onPressed: () async {
-                            if (_formKey.currentState.validate()) {
-                              Map<String, dynamic> body = {
-                                "phoneNumber": _phone,
-                                "to": user.phoneNumber,
-                                "amount": _amount,
-                                "paymentId": Uuid().v1(),
-                                "eventId": widget.eventId
-                              };
-                              Response response =
-                                  await FirebaseApiService.create()
-                                      .sendCashConfirmation(body)
-                                      .then((value) {
-                                Navigator.of(context).pop();
-                                Navigator.of(context).pop();
-                              });
+                        SizedBox(
+                          height: 70,
+                          width: 100,
+                          child: FlatButton(
+                            color: Colors.green,
+                            child: Icon(Icons.payments_outlined),
+                            // child: Image.asset(
+                            //   'assets/images/cash.png',
+                            //   scale: 5,
+                            // ),
+                            onPressed: () async {
+                              if (_formKey.currentState.validate()) {
+                                Map<String, dynamic> body = {
+                                  "phoneNumber": _phone,
+                                  "to": user.phoneNumber,
+                                  "amount": _amount,
+                                  "paymentId": Uuid().v1(),
+                                  "eventId": widget.eventId
+                                };
+                                Response response =
+                                    await FirebaseApiService.create()
+                                        .sendCashConfirmation(body)
+                                        .then((value) {
+                                  Navigator.of(context).pop();
+                                  Navigator.of(context).pop();
+                                });
 
-                              print(response.body);
-                            }
-                          },
-                        ),
-                        FlatButton(
-                          child: Image.asset(
-                            'assets/images/upi.png',
-                            scale: 4,
-                          ),
-                          onPressed: () async {
-                            if (_formKey.currentState.validate()) {
-                              if (_upiId == null) {
-                                print('NO UPI ID, SCAN QR CODE');
-
-                                String scanResult = await scanner.scan();
-                                print(scanResult);
-                                var decoded = Uri.decodeComponent(scanResult);
-
-                                Uri uri = Uri.dataFromString(scanResult);
-                                Map<String, dynamic> params =
-                                    uri.queryParameters;
-                                var uid = params['pa'];
-                                var name = Uri.decodeComponent(params['pn']);
-                                print(uid);
-                                print(name);
-                                print(decoded);
-                                _upiId = uid;
-                                _name = name;
+                                print(response.body);
                               }
-                              _isUpi = true;
-                              Navigator.pop(context);
-                              showAppsBottomSheet(user.phoneNumber);
-                            }
-                          },
+                            },
+                          ),
+                        ),
+                        SizedBox(
+                          height: 70,
+                          width: 100,
+                          child: FlatButton(
+                            child: Image.asset(
+                              'assets/images/upi.png',
+                              fit: BoxFit.fill,
+                              // scale: 4,
+                            ),
+                            onPressed: () async {
+                              if (_formKey.currentState.validate()) {
+                                if (_upiId == null) {
+                                  print('NO UPI ID, SCAN QR CODE');
+
+                                  String scanResult = await scanner.scan();
+                                  print(scanResult);
+                                  var decoded = Uri.decodeComponent(scanResult);
+
+                                  Uri uri = Uri.dataFromString(scanResult);
+                                  Map<String, dynamic> params =
+                                      uri.queryParameters;
+                                  var uid = params['pa'];
+                                  var name = Uri.decodeComponent(params['pn']);
+                                  print(uid);
+                                  print(name);
+                                  print(decoded);
+                                  _upiId = uid;
+                                  _name = name;
+                                }
+                                _isUpi = true;
+                                Navigator.pop(context);
+                                showAppsBottomSheet(user.phoneNumber);
+                              }
+                            },
+                          ),
                         ),
                       ],
                     )
