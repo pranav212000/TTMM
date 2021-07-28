@@ -4,22 +4,22 @@ import 'package:ttmm/floor/entity/group_entity.dart';
 @dao
 abstract class GroupDao {
   @Query('SELECT * FROM Group')
-  Future<List<Group>> getAllGroups();
+  Future<List<GroupEntity>> getAllGroups();
 
   @Query('SELECT * FROM Group WHERE groupId = :groupId')
-  Future<List<Group>> getGroup(String groupId);
+  Future<List<GroupEntity>> getGroup(String groupId);
 
   @insert
-  Future<void> insertGroup(Group group);
+  Future<void> insertGroup(GroupEntity group);
 
   @delete
-  Future<void> deleteGroup(Group group);
+  Future<void> deleteGroup(GroupEntity group);
 
   @Query('DELETE FROM Person')
   Future<void> deleteAllGroups();
 
   @transaction
-  Future<void> replaceGroup(Group group) async {
+  Future<void> replaceGroup(GroupEntity group) async {
     await deleteGroup(group);
     await insertGroup(group);
   }

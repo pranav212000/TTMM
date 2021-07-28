@@ -3,7 +3,7 @@ import 'dart:typed_data';
 import 'package:floor/floor.dart';
 
 @entity
-class Group {
+class GroupEntity {
   @primaryKey
   final String groupId;
   final String groupName;
@@ -11,7 +11,7 @@ class Group {
   final String updatedAt;
   final String createdAt;
 
-  Group(
+  GroupEntity(
       {this.groupId,
       this.groupName,
       this.updatedAt,

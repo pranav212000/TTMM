@@ -64,6 +64,8 @@ class _$AppDatabase extends AppDatabase {
 
   GroupDao _groupDaoInstance;
 
+  EventDao _eventDaoInstance;
+
   Future<sqflite.Database> open(String path, List<Migration> migrations,
       [Callback callback]) async {
     final databaseOptions = sqflite.OpenDatabaseOptions(
@@ -84,7 +86,9 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `Person` (`phoneNumber` TEXT, `avatar` BLOB, `displayName` TEXT, `initials` TEXT, `isRegistered` INTEGER, PRIMARY KEY (`phoneNumber`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `Group` (`groupId` TEXT, `groupName` TEXT, `groupIconUrl` TEXT, `updatedAt` TEXT, `createdAt` TEXT, PRIMARY KEY (`groupId`))');
+            'CREATE TABLE IF NOT EXISTS `GroupEntity` (`groupId` TEXT, `groupName` TEXT, `groupIconUrl` TEXT, `updatedAt` TEXT, `createdAt` TEXT, PRIMARY KEY (`groupId`))');
+        await database.execute(
+            'CREATE TABLE IF NOT EXISTS `event` (`eventId` TEXT, `groupId` TEXT, `eventName` TEXT, `transactionId` TEXT, `createdAt` TEXT, `updatedAt` TEXT, FOREIGN KEY (`groupId`) REFERENCES `GroupEntity` (`groupId`) ON UPDATE NO ACTION ON DELETE NO ACTION, PRIMARY KEY (`eventId`))');
 
         await callback?.onCreate?.call(database, version);
       },
@@ -100,6 +104,11 @@ class _$AppDatabase extends AppDatabase {
   @override
   GroupDao get groupDao {
     return _groupDaoInstance ??= _$GroupDao(database, changeListener);
+  }
+
+  @override
+  EventDao get eventDao {
+    return _eventDaoInstance ??= _$EventDao(database, changeListener);
   }
 }
 
@@ -235,21 +244,21 @@ class _$PersonDao extends PersonDao {
 class _$GroupDao extends GroupDao {
   _$GroupDao(this.database, this.changeListener)
       : _queryAdapter = QueryAdapter(database),
-        _groupInsertionAdapter = InsertionAdapter(
+        _groupEntityInsertionAdapter = InsertionAdapter(
             database,
-            'Group',
-            (Group item) => <String, dynamic>{
+            'GroupEntity',
+            (GroupEntity item) => <String, dynamic>{
                   'groupId': item.groupId,
                   'groupName': item.groupName,
                   'groupIconUrl': item.groupIconUrl,
                   'updatedAt': item.updatedAt,
                   'createdAt': item.createdAt
                 }),
-        _groupDeletionAdapter = DeletionAdapter(
+        _groupEntityDeletionAdapter = DeletionAdapter(
             database,
-            'Group',
+            'GroupEntity',
             ['groupId'],
-            (Group item) => <String, dynamic>{
+            (GroupEntity item) => <String, dynamic>{
                   'groupId': item.groupId,
                   'groupName': item.groupName,
                   'groupIconUrl': item.groupIconUrl,
@@ -263,14 +272,14 @@ class _$GroupDao extends GroupDao {
 
   final QueryAdapter _queryAdapter;
 
-  final InsertionAdapter<Group> _groupInsertionAdapter;
+  final InsertionAdapter<GroupEntity> _groupEntityInsertionAdapter;
 
-  final DeletionAdapter<Group> _groupDeletionAdapter;
+  final DeletionAdapter<GroupEntity> _groupEntityDeletionAdapter;
 
   @override
-  Future<List<Group>> getAllGroups() async {
+  Future<List<GroupEntity>> getAllGroups() async {
     return _queryAdapter.queryList('SELECT * FROM Group',
-        mapper: (Map<String, dynamic> row) => Group(
+        mapper: (Map<String, dynamic> row) => GroupEntity(
             groupId: row['groupId'] as String,
             groupName: row['groupName'] as String,
             updatedAt: row['updatedAt'] as String,
@@ -279,10 +288,10 @@ class _$GroupDao extends GroupDao {
   }
 
   @override
-  Future<List<Group>> getGroup(String groupId) async {
+  Future<List<GroupEntity>> getGroup(String groupId) async {
     return _queryAdapter.queryList('SELECT * FROM Group WHERE groupId = ?',
         arguments: <dynamic>[groupId],
-        mapper: (Map<String, dynamic> row) => Group(
+        mapper: (Map<String, dynamic> row) => GroupEntity(
             groupId: row['groupId'] as String,
             groupName: row['groupName'] as String,
             updatedAt: row['updatedAt'] as String,
@@ -296,17 +305,17 @@ class _$GroupDao extends GroupDao {
   }
 
   @override
-  Future<void> insertGroup(Group group) async {
-    await _groupInsertionAdapter.insert(group, OnConflictStrategy.abort);
+  Future<void> insertGroup(GroupEntity group) async {
+    await _groupEntityInsertionAdapter.insert(group, OnConflictStrategy.abort);
   }
 
   @override
-  Future<void> deleteGroup(Group group) async {
-    await _groupDeletionAdapter.delete(group);
+  Future<void> deleteGroup(GroupEntity group) async {
+    await _groupEntityDeletionAdapter.delete(group);
   }
 
   @override
-  Future<void> replaceGroup(Group group) async {
+  Future<void> replaceGroup(GroupEntity group) async {
     if (database is sqflite.Transaction) {
       await super.replaceGroup(group);
     } else {
@@ -315,6 +324,87 @@ class _$GroupDao extends GroupDao {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
         await transactionDatabase.groupDao.replaceGroup(group);
+      });
+    }
+  }
+}
+
+class _$EventDao extends EventDao {
+  _$EventDao(this.database, this.changeListener)
+      : _queryAdapter = QueryAdapter(database),
+        _eventEntityInsertionAdapter = InsertionAdapter(
+            database,
+            'event',
+            (EventEntity item) => <String, dynamic>{
+                  'eventId': item.eventId,
+                  'groupId': item.groupId,
+                  'eventName': item.eventName,
+                  'transactionId': item.transactionId,
+                  'createdAt': item.createdAt,
+                  'updatedAt': item.updatedAt
+                }),
+        _eventEntityDeletionAdapter = DeletionAdapter(
+            database,
+            'event',
+            ['eventId'],
+            (EventEntity item) => <String, dynamic>{
+                  'eventId': item.eventId,
+                  'groupId': item.groupId,
+                  'eventName': item.eventName,
+                  'transactionId': item.transactionId,
+                  'createdAt': item.createdAt,
+                  'updatedAt': item.updatedAt
+                });
+
+  final sqflite.DatabaseExecutor database;
+
+  final StreamController<String> changeListener;
+
+  final QueryAdapter _queryAdapter;
+
+  final InsertionAdapter<EventEntity> _eventEntityInsertionAdapter;
+
+  final DeletionAdapter<EventEntity> _eventEntityDeletionAdapter;
+
+  @override
+  Future<List<EventEntity>> getAllEvents(String groupId) async {
+    return _queryAdapter.queryList('SELECT * FROM Event WHERE groupId = ?',
+        arguments: <dynamic>[groupId],
+        mapper: (Map<String, dynamic> row) => EventEntity(
+            eventId: row['eventId'] as String,
+            groupId: row['groupId'] as String,
+            eventName: row['eventName'] as String,
+            transactionId: row['transactionId'] as String,
+            createdAt: row['createdAt'] as String,
+            updatedAt: row['updatedAt'] as String));
+  }
+
+  @override
+  Future<void> deleteAllEvents() async {
+    await _queryAdapter.queryNoReturn('DELETE FROM Event');
+  }
+
+  @override
+  Future<void> insertEvent(EventEntity eventEntity) async {
+    await _eventEntityInsertionAdapter.insert(
+        eventEntity, OnConflictStrategy.abort);
+  }
+
+  @override
+  Future<void> deleteEvent(EventEntity eventEntity) async {
+    await _eventEntityDeletionAdapter.delete(eventEntity);
+  }
+
+  @override
+  Future<void> replaceEvent(EventEntity eventEntity) async {
+    if (database is sqflite.Transaction) {
+      await super.replaceEvent(eventEntity);
+    } else {
+      await (database as sqflite.Database)
+          .transaction<void>((transaction) async {
+        final transactionDatabase = _$AppDatabase(changeListener)
+          ..database = transaction;
+        await transactionDatabase.eventDao.replaceEvent(eventEntity);
       });
     }
   }
